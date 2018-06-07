@@ -1,23 +1,31 @@
+/*********************************************************************************
 
+Macro for splitting data for local dependence
 
-/*Macro splitting for local dependence*/
+call macro using
 
-/* DATA:  Data on the form required for use of %MML2D with one variable for each item */
-/* NAMES: Data set with decription of the items (name1 name2 max) */
-/* DIM:   Dimension (1 or 2) of the model. */
-/* INDEP: Items to split DEP according to */
-/* DEP:   Items to be split separated by blanks 
-	   	  (first item in the sequence is split according to the value of first item in INDEP sequence) */
+%LIRT_SPLIT(data, names, dim, indep, dep, delete=Y);
 
-/* OUTPUT */
+where
 
-/* &DATA._SPLIT: Dataset with original and split items */
-/* &names._SPLIT: Original names data with split item added */
+DATA:  Data set
+NAMES: Data set with decription of the items (name1 name2 max) 
+DIM:   Dimension (1 or 2) of the model.
+INDEP: List of items (separated by blanks) to split DEP according to 
+DEP:   List of items (separated by blanks) to be split  
+	   	
+item no 'x' in DEP ilst is split according to the values of item no 'x' in INDEP 
+list. The output consists of the two data sets
 
+&DATA._SPLIT: Dataset with original and split items 
+&NAMES._SPLIT: Original 'names' data set with the split item added
+
+*********************************************************************************/
 
 %macro LIRT_SPLIT(data, names, dim, indep, dep, delete=Y);
 
 options nomprint nonotes;
+ods exclude all;
 
 %if &dim.=1 %then %do;
 
@@ -220,7 +228,6 @@ options nomprint nonotes;
 
 %end;
 
-
 options notes;
-
+ods exclude nine;
 %mend LIRT_SPLIT;
