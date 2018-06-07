@@ -40,13 +40,9 @@ Goodness of fit macro (plots and simulation based tests).
 				out=GOF,
 				SetPath="");
 
-%let out=%trim(&out);
-ods listing close;
-ods html close;
+ods exclude all;
 goptions reset=all;
-options nonotes nomprint;
-
-options mprint;
+options nonotes nostimer nomprint;
 
 * count number of records in data set;
 data _null_; 
@@ -132,8 +128,6 @@ quit;
 
 		* simulate data sets;
 		%lirt_simu(NAMES=&names, DIM=1, NDATA=&nsimu, NPERSONS=&N, PDATA=_pdata, OUT=s);
-		options nonotes;
-		ods listing close;
 
 		* combine observed and simulated data sets - compute score (item mean rescaled);
 		data _s0 /*(rename=(&id.=id))*/; set &data; dataset=0; run;
@@ -206,10 +200,6 @@ run;
 %end;
 
 ods rtf body="&SetPath..rtf" style=JOURNAL;
-ods listing close;
-
-
-
 
 %if %upcase(&itemTo.) ^= N %then %do;
 
@@ -236,15 +226,10 @@ ods listing close;
 			symbol2 v=none i=join w=6 l=1 color=black;
 		run;
 		quit;
-		ods html close;
 %end;
 
-
-ods rtf close;
-ods listing;
-
 	/***************/     /**********************************************************/
-	/**** DIM=2 ****/     /**** Der er ikke tilf�jet en lykke for 2 dimensioner. ****/
+	/**** DIM=2 ****/     /**** Der er ikke tilføjet en løkke for 2 dimensioner. ****/
 	/***************/     /**********************************************************/
 
 	%if &dim=2 %then %do;
@@ -331,8 +316,6 @@ ods listing;
 		/* Simulate from fitted model */
 
 		%lirt_simu(NAMES=&names., DIM=2, NDATA=&nsimu, NPERSONS=&n, PDATA=_pdata, OUT=s, delete=N);
-		options nonotes;
-		ods listing close;
 
 		data _s0 /*(rename=(&id.=id))*/; set &data; dataset=0; run;
 
@@ -389,7 +372,6 @@ ods listing;
 		run;
 
 		/* read item names from names data set */
-
 		proc sql noprint;
 			select count(unique(name)) into :_nitems from &names;
 		quit;
@@ -415,8 +397,6 @@ ods listing;
 		%end;
 
 		%lirt_simu(NAMES=&names, DIM=1, NDATA=&nsimu, NPERSONS=&N, PDATA=_pdata, OUT=s);
-		options nonotes;
-		ods listing close;
 
 		data _s0 /*(rename=(&id.=id))*/; set &data; dataset=0; run;
 
@@ -470,8 +450,7 @@ ods listing;
 
 	%if &dim=2 %then %do;
 
-		/* read item names from names data set */
-		
+		/* read item names from names data set */		
 		proc sql noprint;
 			select count(distinct(name1)) 
 			into :_nitems1
@@ -510,11 +489,10 @@ ods listing;
 		%end;
 
 		/* Find out whether ITEM (the item to be plotted) is a time 1 or time 2 item */
-
 		data _names;
-		set &names.;
-		if name1="&item" then time=1;
-		if name2="&item" then time=2;
+			set &names.;
+			if name1="&item" then time=1;
+			if name2="&item" then time=2;
 		run;
 
 		proc sql noprint;
@@ -550,10 +528,7 @@ ods listing;
 		run;
 
 		/* Simulate from fitted model */
-
 		%lirt_simu(NAMES=&names., DIM=2, NDATA=&nsimu, NPERSONS=&n, PDATA=_pdata, OUT=s);
-		options nonotes;
-		ods listing close;
 
 		data _s0 /*(rename=(&id.=id))*/; set &data; dataset=0; run;
 
@@ -623,8 +598,6 @@ proc datasets nodetails nolist;
 	delete s_simu1-s_simu&NSIMU;
 run;
 quit;
-*ods listing;
-*ods html;
 
 %if %upcase(&fittest.)=Y %then %do;
 	
@@ -636,4 +609,5 @@ quit;
 	proc print data=&out._GOF noobs; 
 	run;
 %end;
+ods exclude none;
 %mend LIRT_GOF;
