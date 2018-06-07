@@ -1,32 +1,33 @@
+/**************************************************************************
 
-/* Macro creating a data set with item names to use for %LIRT_MML */
+SAS macro that creates a data set with item names to use for %LIRT_MML.sas
 
-/*
+call the macro using
 
-OUTDATA: the resulting data set with item names
 
-PARDATA: data set with item names and corresponding scores and parameters (columns: name, score, ipar, disc)
-
-ANC1: anchor items at time 1 separated by blanks 
-ANC2: anchor items at time 2 separated by blanks 
-
-(first item in the sequence ANC1 and ANC2 are assumed to have the same item parameters and so on)
-
+OUTDATA:the resulting data set with item names
+PARDATA:data set with item names and corresponding scores and parameters 
+	(columns: name, score, ipar, disc)
+ANC1: 	anchor items at time 1 separated by blanks 
+ANC2: 	anchor items at time 2 separated by blanks 
 UNANC1: unanchored items at time 1 separated by blanks (default none)
 UNANC2: unanchored items at time 2 separated by blanks (default none)
+
+(first item in the sequence ANC1 and ANC2 are assumed to have the same item parameters and so on)
 
 /* If the result of a split item, item2_0 and item2_1, in UNANC2 are (was) locally dependent on one of the items, item1 in UNANC1*/
 /* Then it should be written as follows UNANC2=... item2_0 (item1=0) item2_1 (item1=1) */
 
 
-%macro LIRT_NAMES_SIMU(PARDATA,
-					   OUTDATA, 
-					   ANC1, 
-					   ANC2, 
-					   UNANC1=none, 
-					   UNANC2=none);
+%macro LIRT_NAMES_SIMU(	PARDATA,
+			OUTDATA, 
+		   	ANC1, 
+		   	ANC2, 
+		   	UNANC1=none, 
+		   	UNANC2=none);
 
 	options nomprint nonotes;
+	ods exclude all;
 
 	/* Save anchored items as macro variables */
 
@@ -249,5 +250,6 @@ UNANC2: unanchored items at time 2 separated by blanks (default none)
 	quit;
 
 	options notes;
+	ods exclude none;
 
 %mend LIRT_NAMES_SIMU;
