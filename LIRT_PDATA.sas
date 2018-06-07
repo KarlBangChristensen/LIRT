@@ -1,4 +1,4 @@
-
+*;
 %macro LIRT_PDATA(OUTDATA, DIM, MEAN1, MEAN2, VAR1, VAR2, RHO);
 
 options nomprint nonotes;
