@@ -1,27 +1,27 @@
+/************************************************************************************************
+Call macro using
 
-/* DATA: data set with items */
+%LIRT_PPAR(data, names, dim, id, out, delete=Y);
 
-/* NAMES: data set with item information including estimates (as &out_names from %lirt_mml) */
+where
 
-/* DIM: dimension of latent variable (1 or 2) */
-
-/* ID: variable in DATA holding a unique person id */
-
-/* OUT: prefix for output data sets*/
-
-/* QPOINTS: number of quadrature points in integral approximation */
-
-/* DELETE: Y/N indicating whether all temporary data sets beginning with an _ should be deleted.*/
+DATA: 	data set with items 
+NAMES: 	data set with item information and estimates (&out_names from %lirt_mml.sas) 
+DIM: 	dimension of latent variable (1 or 2 time points)
+ID: 	variable in DATA holding a unique person id 
+OUT: 	prefix for output data sets
+DELETE: Y/N indicating whether all temporary data sets beginning with an _ should be deleted.*/
+************************************************************************************************/
 
 %macro LIRT_PPAR(data, 
-				 names, 
-				 dim, 
-				 id, 
-				 out,  
-				 delete=Y);
+		 names, 
+		 dim, 
+		 id, 
+		 out,  
+		 delete=Y);
 
 options nomprint nonotes;
-
+ods exclude all;
 %if &dim.=1 %then %do;
 
 	proc sql noprint;
@@ -92,8 +92,7 @@ options nomprint nonotes;
 
 	%do _n=1 %to &_npersons.;	
 			
-		/* direct output to files */
-
+		* direct output to files;
 		ods output nlmixed.Fitstatistics =_logl&&_pers&_n;
 		ods output nlmixed.ConvergenceStatus=_conv&&_pers&_n;
 		ods output nlmixed.ParameterEstimates=_ppar&&_pers&_n;	
@@ -192,7 +191,7 @@ options nomprint nonotes;
 	quit; 
 
 	/* rec1 and rec2 are variables indicating whether unachored items are present or not. */
-	/* Kunne have nøjedes med at gøre det til tid 1 f.eks. */
+	/* Kunne have nÃ¸jedes med at gÃ¸re det til tid 1 f.eks. */
 
 	proc sql noprint;
 	select count(*)
@@ -237,7 +236,7 @@ options nomprint nonotes;
 
 	%end;
 
-	/* Gem eventuelt også item_text for at kunne matche estimerede parametre med items */
+	/* Gem eventuelt ogsÃ¥ item_text for at kunne matche estimerede parametre med items */
 
 	proc sql noprint;
 	select distinct(name1), name2, max 
@@ -280,7 +279,7 @@ options nomprint nonotes;
 		data _items1_temp2;
 		set _items1_temp;
 		by name1;
-		/* Løkken skal vist bare køres fra 1 og frem */
+		/* LÃ¸kken skal vist bare kÃ¸res fra 1 og frem */
 		%do _i=%eval(&_nitems.+1) %to %eval(&_nitems.+&_nitems1.);
 			if name1="&&item1_&_i" and first.name1 then call symput("disc&_i.",disc);
 			%do _h=0 %to &&max&_i;
@@ -559,5 +558,5 @@ options nomprint nonotes;
 	options notes;
 
 %end;
-
+ods exclude none;
 %mend LIRT_PPAR;
