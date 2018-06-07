@@ -1,6 +1,4 @@
-
-
-/*
+/*************************************************************************************
 
 Macro simulating from the two-dimensional dichotomous Rasch model where item parameters are drawn from a uniform distribution and 
 person parameters from a normal distribution. It is possible to include item specific response dependence drawn from a 
@@ -58,9 +56,6 @@ PDATA : if NPERSONS=0 then PDATA should contain the individual theta estimates. 
 		ESTIMATE (the estimate)
 
 OUT  : prefix for output data set with simulated responses (and other variables)
-*/
-
-/*** 
 
 OBS! If the item scores in &NAMES goes from 1 to some MAX it is assumed that the items are scored from 1,...,MAX 
 and that the ipar and disc corresponding to a score of 0 is 0 and 1	resp. 
@@ -68,19 +63,19 @@ This corresponds to using the output &OUT_NAMES from %LIRT_MML as input to
 
 If the item scores goes from 0 to MAX then it is assumed that all the scores are given in the data set. 
 
-***/
+/*************************************************************************************/
 
 
-%macro LIRT_SIMU(NAMES,
-				 DIM,
-				 NDATA, 
-				 NPERSONS,
-				 PDATA, 
-    			 OUT,
-				 DELETE=Y);
+%macro LIRT_SIMU(	NAMES,
+			DIM,
+			NDATA, 
+			NPERSONS,
+			PDATA, 
+			OUT,
+			DELETE=Y);
 
 options nomprint nonotes;
-
+ods exclude all;
 	/*********** START OF 1-DIMENSIONAL CASE ***********/
 
 	%if &dim=1 %then %do;
@@ -122,28 +117,22 @@ options nomprint nonotes;
 		%do s=1 %to &ndata.;
 
 			%if &npersons^=0 %then %do;
-
-				/* simulate correlated thetas */
-						
+				* simulate correlated thetas;						
 				data _theta; 
-				do id=1 to &npersons; 
-				/* Simulate one-dimensional normal distribution */
-					x=rannor(0);
-					theta=&pmean.+sqrt(&pvar.)*x; 
-					join=1;
-					output;
-				end; 
+					do id=1 to &npersons; 
+						x=rannor(0);
+						theta=&pmean.+sqrt(&pvar.)*x; 
+						join=1;
+						output;
+					end; 
 				run;
-
 			%end;
 			%else %do; 
-			/* Use thetas from PDATA */
-				
+				* use thetas from PDATA;
 				data _theta; 
-				set &pdata.; 
-				join=1;
+					set &pdata.; 
+					join=1;
 				run;
-
 			%end;
 			
 			/* Time 1 */
@@ -157,7 +146,7 @@ options nomprint nonotes;
 			create table _items1 as select a.*,
 			b.id,
 			b.theta
-			/* Dette datasæt eksisterer ikke! */
+			/* Dette datasÃ¦t eksisterer ikke! */
 			from _names a left join _theta b 
 			on a.join=b.join;
 			quit;
@@ -534,8 +523,8 @@ options nomprint nonotes;
 
 			%end;
 			%if &_nobs2.^=0 %then %do;
-				/* Hvis der er både er tid 2 items med og uden LD */
-				/* I dette tilfælde eksisterer datasættet '_responses' */
+				* If time 2 items with og uden LD */
+				/* I dette tilfÃ¦lde eksisterer datasÃ¦ttet '_responses' */
 				%if &_nobs_ld.^=0 %then %do;
 
 					proc sql;
@@ -547,7 +536,7 @@ options nomprint nonotes;
 
 				%end;
 				/* Hvis der kun er tid 2 items uden LD */
-				/* Her ekisterer datasættet _resp_ld_t ikke (så tjek om der overhovedet er noget at merge på), kun _responses */
+				/* Her ekisterer datasÃ¦ttet _resp_ld_t ikke (sÃ¥ tjek om der overhovedet er noget at merge pÃ¥), kun _responses */
 				/* Skal _responses bare set'es?? */
 				%else %do;
 			
@@ -597,8 +586,7 @@ options nomprint nonotes;
 
 		%end;
 
-		/* Data set with item_names that can be used as input for %LIRT_MML */
-
+		* Data set with item_names that can be used as input for the macro %LIRT_MML.sas;
 		data _names1;
 		set &names.;
 		item=strip(name1)||strip(name2);
@@ -654,14 +642,11 @@ options nomprint nonotes;
 		from _datasets
 		where substr(name,1,1)='_';
 		quit;
-
 		proc datasets nodetails; 
-		delete %do k=1 %to &_ndata.; &&_data&k %end; _datasets;
-		run;
+			delete %do k=1 %to &_ndata.; &&_data&k %end; _datasets;
+			run;
 		quit;
-
 	%end;
-
 	options notes; 
-
+	ods exclude none;
 %mend LIRT_SIMU;
