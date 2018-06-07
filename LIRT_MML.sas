@@ -1,29 +1,20 @@
-/**************************************************************************
+/****************************************************************************
 
-LIRT_MML: a SAS macro that can be used to fit longitudinal polytomous IRT models (1 or 2 time points) using 
-		  marginal maximum likelihood estimation. It can accommodate both item drift and local dependence across time points.
+LIRT_MML: a SAS macro that can be used to fit longitudinal polytomous IRT 
+models (1 or 2 time points) using marginal maximum likelihood estimation. It 
+can accommodate both item drift and local dependence across time points. Call
+macro using
 
-***************************************************************************
+%LIRT_MML(data, names, dim, out, delete=Y);
 
-Created by 
+where
 
-Maja Olsbjerg 
-Karl Bang Christensen
-Department of Biostatistics
-University of Copenhagen.
-
-documentation is avalable from
-
-http://biostat.ku.dk/~mola/macro/....pdf
-
-**************************************************************************
-
-
-DATA: the data set with each item represented containing the items (scored 0,1, .. ,'max'). 
-	  The number of response categories 'max' can differ between items (within time point).  
+DATA: is the data set with each item represented containing the items (scored 0,1, 
+.. ,'max'), where the number of response categories 'max' can differ between items 
+(within time point).  
 	  
-
-NAMES: data set that contains information about the items. This data set should contain the variables 
+NAMES:  is a data set that contains information about the items. This data set 
+should contain the variables 
 
 	   (when dim=1)
 
@@ -37,7 +28,7 @@ NAMES: data set that contains information about the items. This data set should 
 	   max: maximum score on items
 	   disc_yn: variable taking on value N if item is 1PL and Y if item is 2PL. 
 
-DIM: dimension of latent variable. Takes the value 1 if one time point is considered or 2 if 
+DIM: is the dimension of latent variable (number of time points).
 
 OUT: prefix of output data sets
 
@@ -50,15 +41,17 @@ OUT: prefix of output data sets
 	data set OUT_logl
 	data set OUT_conv
 
+DELETE: indicator telling macro to delete temporary data sets
 **************************************************************************/
 
 %macro LIRT_MML(data, 
-				names, 
-				dim, 
-				out, 
-				delete=Y);
+		names, 
+		dim, 
+		out, 
+		delete=Y);
 
 options nomprint nonotes;
+ods exclude all;
 
 %if &dim.=1 %then %do;
 
@@ -78,8 +71,7 @@ options nomprint nonotes;
 	from &names.;
 	quit;
 	
-	/* Bruges nu kun til kun at give initialværdier i parms-statent */
-
+	* only used for initial values in parms statement;
 	proc sql noprint;
 	select sum((disc_yn^='Y'))
 	into :disc
@@ -102,13 +94,11 @@ options nomprint nonotes;
 	/*******************************************/
 
 	/* direct output to files */
-
 	ods output nlmixed.ConvergenceStatus=&out._conv;
 	ods output nlmixed.additionalestimates=_item_parameters;
 	ods output nlmixed.fitstatistics=_logl;
 
 	/* numerical maximization using PROC NLMIXED */
-
 	proc nlmixed data=_new;
 	parms 
 	eta1_1=0
@@ -145,7 +135,7 @@ options nomprint nonotes;
 		%end;
 		%else %if &&d&_i^=Y %then %do;		
 			_denom=1 %do _k=1 %to &&max&_i; 
-				/* sæt alpha ind fælles for 1PL items */
+				/* sÃ¦t alpha ind fÃ¦lles for 1PL items */
 				+exp(alpha*(&_k*_theta+eta&_i._&_k.)) 
 			%end;;
 			if item="&&item&_i" and value=0 then ll=-log(_denom);
@@ -213,11 +203,8 @@ options nomprint nonotes;
 	upper
 	from _disc_temp;
 	quit;
-
 	
-	/* Make datasets to use in %LIRT_ICC and %LIRT_SIMU */
-
-	
+	/* Make datasets to use in %LIRT_ICC and %LIRT_SIMU */	
 	data _ipar0;
 	set &out._ipar;
 	item=scan(parameter,1,'|');
@@ -338,7 +325,7 @@ options nomprint nonotes;
 	quit;
 
 	/* rec1 and rec2 are variables indicating whether unachored items are present or not. */
-	/* Kunne have nøjedes med at gøre det til tid 1 f.eks. */
+	/* Kunne have nÃ¸jedes med at gÃ¸re det til tid 1 f.eks. */
 
 	proc sql noprint;
 	select count(*)
@@ -383,7 +370,7 @@ options nomprint nonotes;
 
 	%end;
 
-	/* Gem eventuelt også item_text for at kunne matche estimerede parametre med items */
+	/* Gem eventuelt ogsÃ¥ item_text for at kunne matche estimerede parametre med items */
 
 	proc sql noprint;
 	select distinct(name1), name2, max, disc_yn
@@ -453,14 +440,12 @@ options nomprint nonotes;
 	/*******************************************/
 
 	/* direct output to files */
-
 	ods output nlmixed.ConvergenceStatus=&out._conv;
 	ods output nlmixed.parameterestimates=_item_parameters1;
 	ods output nlmixed.additionalestimates=_item_parameters2;
 	ods output nlmixed.fitstatistics=_logl;
 
 	/* numerical maximization using PROC NLMIXED */
-
 	proc nlmixed data=_new;
 	parms 
 	mu=0,
@@ -651,8 +636,7 @@ options nomprint nonotes;
 	where Descr='-2 Log Likelihood';
 	run;
 
-	/* Lav datasæt hvor parametrene 'parameter' bliver knyttet til name */
-
+	* data set where parameters are linked to 'name';
 	proc sql;
 	create table &out._poppar as select
 	parameter label='Parameter',
@@ -876,10 +860,10 @@ options nomprint nonotes;
 	run;
 
 %end;
+* delete temporray data sets;
 %if %upcase(&delete.)=Y %then %do;
 
 	ods output Datasets.Members=_datasets;
-
 	proc datasets nodetails;
 	run; 
 	quit;
@@ -906,8 +890,7 @@ options nomprint nonotes;
 	quit;
 
 %end;
-
 options notes;
-
+ods exclude none;
 %mend LIRT_MML;
 
