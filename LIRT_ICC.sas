@@ -1,10 +1,13 @@
+/************************************************************************************
 
+SAS macro for plotting ICC curves for 2 dimensional IRT models (1PL and 2PL). Call
+macro using
 
-/* Macro plotting ICC curves for 2 dimensional IRT models (1PL and 2PL)*/
+%LIRT_ICC(names, dim, out, delete=Y);
 
-/* 
+where
 
-Names: data set with information on items. The following variables 
+names: is the data set with information on items. The following variables 
 	
 			name1
 			name2
@@ -14,16 +17,24 @@ Names: data set with information on items. The following variables
 			disc
 			thres	
 
-NOTE: If name1 and name2 are both non-empty that item is anchored. Otherwise it is not.
+(if name1 and name2 are both non-empty that item is anchored. Otherwise it is not).
 
-*/
+dim: is 1 or 2.
+
+out: the name of the output data set.
+
+delete: (Y or N) indicating whether to delete temporary files.
+
+************************************************************************************/
 
 %macro LIRT_ICC(names, 
-				dim, 
-				out,
-				delete=Y);
+		dim, 
+		out,
+		delete=Y);
 
-options nomprint nonotes;
+options nomprint nonotes nostimer;
+ods exclude all;
+
 
 %if &dim.=1 %then %do;
 
@@ -64,7 +75,7 @@ options nomprint nonotes;
 	end;
 	run;
 
-	/* Datasæt med (x,y) for ICC-kurver*/
+	/* DatasÃ¦t med (x,y) for ICC-kurver*/
 
 	proc sql;
 	create table _icc2 as select *,
@@ -76,7 +87,7 @@ options nomprint nonotes;
 
 	/* Save item_name and max for each item in the in the input data set &ipar (based on the variable item_no) */
 
-	/* Gøres i to steps og med order fordi man ellers får gemt items i alfabetisk rækkefølge istedet for input orden */
+	/* GÃ¸res i to steps og med order fordi man ellers fÃ¥r gemt items i alfabetisk rÃ¦kkefÃ¸lge istedet for input orden */
 
 	proc sql;
 	create table _icc3 as select distinct(title), max, order 
@@ -100,7 +111,7 @@ options nomprint nonotes;
 			
 	/* Plotting ICC's */
 
-	ods listing;
+	ods exclude none;
 		
 	axis1 order=(%eval(&xmin.) to %eval(&xmax.) by 1) length=15 cm value=(H=2) minor=NONE label=(H=2 'Latent variable');
 	axis2 order=(0 to 1 by 0.1) label=(H=2 A=90 'Probability') length=10 cm value=(H=2) minor=NONE;
@@ -118,7 +129,7 @@ options nomprint nonotes;
 
 	%end;
 
-	ods listing close;
+	ods exclude all;
 
 	proc sql;
 	create table &out._plot as select
@@ -175,7 +186,7 @@ options nomprint nonotes;
 	end;
 	run;
 
-	/* Datasæt med (x,y) for ICC-kurver*/
+	/* DatasÃ¦t med (x,y) for ICC-kurver*/
 
 	proc sql;
 	create table _icc2 as select *,
@@ -187,7 +198,7 @@ options nomprint nonotes;
 
 	/* Save item_name and max for each item in the in the input data set &ipar (based on the variable item_no) */
 
-	/* Gøres i to steps og med order fordi man ellers får gemt items i alfabetisk rækkefølge istedet for input orden */
+	/* GÃ¸res i to steps og med order fordi man ellers fÃ¥r gemt items i alfabetisk rÃ¦kkefÃ¸lge istedet for input orden */
 
 	proc sql;
 	create table _icc3 as select distinct(title), max, order
@@ -211,7 +222,7 @@ options nomprint nonotes;
 			
 	/* Plotting ICC's */
 
-	ods listing;
+	ods exclude none;
 		
 	axis1 order=(%eval(&xmin.) to %eval(&xmax.) by 1) length=15 cm value=(H=2) minor=NONE label=(H=2 'Latent variable');
 	axis2 order=(0 to 1 by 0.1) label=(H=2 A=90 'Probability') length=10 cm value=(H=2) minor=NONE;
@@ -229,7 +240,7 @@ options nomprint nonotes;
 
 	%end;
 
-	ods listing close;
+	ods exclude all;
 
 	proc sql;
 	create table &out._plot as select
@@ -278,6 +289,7 @@ options nomprint nonotes;
 %end;
 
 options notes;
+ods exclude none;
 
 %mend LIRT_ICC;
 
