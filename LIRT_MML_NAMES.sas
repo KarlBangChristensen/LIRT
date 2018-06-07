@@ -1,36 +1,38 @@
+/************************************************************************************************ 
+SAS macro that can create a data set with item names to use for %LIRT_MML.sas. Call the macro
+using
 
-/* Macro creating a data set with item names to use for %LIRT_MML */
+%LIRT_NAMES_MML(DATA, OUTDATA, ANC1, ANC2, UNANC1=none, UNANC2=none, BIRN=none);
 
-/*
+where
 
-DATA: data set with items (necessary in order to find the maximum value)
-
-OUTDATA: the resulting data set with item names
-
-ANC1: anchor items at time 1 separated by blanks (default all)
-ANC2: anchor items at time 2 separated by blanks (default all)
-
-(first item in the sequence ANC1 and ANC2 are assumed to have the same item parameters and so on)
-
+DATA: 	data set with items (necessary in order to find the maximum value)
+OUTDATA:the resulting data set with item names
+ANC1: 	anchor items at time 1 separated by blanks (default all)
+ANC2: 	anchor items at time 2 separated by blanks (default all)
 UNANC1: unanchored items at time 1 separated by blanks (default none)
 UNANC2: unanchored items at time 2 separated by blanks (default none)
+BIRN: 	if rasch then the variable DISC_YN='N', if ^=rasch (e.g. birn) then DISC_YN='Y' in the 
+	output data set.
 
-BIRN: if rasch then the variable DISC_YN='N', if ^=rasch (e.g. birn) then DISC_YN='Y' in the output data set.
+at least one item should be anchored. The lists ANC1 and ANC2 should have the same length. It 
+is assumed that the first item in the sequences ANC1 and ANC2 have the same item parameters and 
+so on: If "ANC1=v1 v2 item23" and "ANC=v1_2 item4 Y" then item parameters for v1 and v1_2 are 
+restricted to be equal, item parameters for v2 and item4 are restricted to be equal, and item 
+parameters for item23 and Y are restricted to be.
 
-(item parameters for FIRST item in ANCHOR1 equals item parameters for FIRST item in ANCHOR2 and so on)
-(at least one item should be anchored)
+************************************************************************************************/
 
-*/
-
-%macro LIRT_NAMES_MML(DATA, 
-					  OUTDATA, 
-					  ANC1, 
-					  ANC2, 
-					  UNANC1=none, 
-					  UNANC2=none, 
-					  BIRN=none);
+%macro LIRT_NAMES_MML(	DATA, 
+			OUTDATA, 
+			ANC1, 
+			ANC2, 
+			UNANC1=none, 
+			UNANC2=none, 
+			BIRN=none);
 
 options nomprint nonotes;
+ods exclude all;
 
 /* Save anchored items as macro variables */
 
@@ -147,14 +149,14 @@ format name1 name2 $20. max 1. disc_yn $1.;
 	%do _i=1 %to &_nunanc2.;
 		name1="";
 		name2="&&_unanc2_&_i";
-		/* Lav dette om når %LIRT_MML_SMART bliver rettet så der kun er en max-variabel */
+		/* Lav dette om nÃ¥r %LIRT_MML_SMART bliver rettet sÃ¥ der kun er en max-variabel */
 		max=&&_max2_&_i;
 		output;
 	%end;
 %end;
 run;
 
-/* Lav istedet noget hvor man skriver følge af items der er 2PL */
+/* Lav istedet noget hvor man skriver fÃ¸lge af items der er 2PL */
 
 %if %upcase(&birn.)^=NONE %then %do;
 
@@ -173,5 +175,5 @@ run;
 %end;
 
 options notes;
-
+ods exclude none;
 %mend LIRT_NAMES_MML;
