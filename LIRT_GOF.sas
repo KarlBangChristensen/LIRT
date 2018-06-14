@@ -128,6 +128,7 @@ quit;
 
 		* simulate data sets;
 		%lirt_simu(NAMES=&names, DIM=1, NDATA=&nsimu, NPERSONS=&N, PDATA=_pdata, OUT=s);
+		ods exclude all;
 
 		* combine observed and simulated data sets - compute score (item mean rescaled);
 		data _s0 /*(rename=(&id.=id))*/; set &data; dataset=0; run;
@@ -316,6 +317,7 @@ ods rtf body="&SetPath..rtf" style=JOURNAL;
 		/* Simulate from fitted model */
 
 		%lirt_simu(NAMES=&names., DIM=2, NDATA=&nsimu, NPERSONS=&n, PDATA=_pdata, OUT=s, delete=N);
+		ods exclude all;
 
 		data _s0 /*(rename=(&id.=id))*/; set &data; dataset=0; run;
 
