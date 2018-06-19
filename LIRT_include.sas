@@ -1,7 +1,7 @@
 * SAS statements that include the LIRT-macros from GitHub;
 %let url=https://raw.githubusercontent.com/KarlBangChristensen/LIRT/master;
 
-filename gof url "&url/ LIRT_GOF.sas"; %include gof;
+filename gof url "&url/LIRT_GOF.sas"; %include gof;
 filename icc url "&url/LIRT_ICC.sas"; %include icc;
 filename mml url "&url/LIRT_MML.sas"; %include mml;
 filename name url "&url/LIRT_MML_NAMES.sas"; %include Name;
