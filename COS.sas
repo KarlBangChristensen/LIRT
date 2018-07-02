@@ -9,21 +9,9 @@ PROC IMPORT OUT= WORK.sleep1_2
 RUN;
 
 /* Include macros */
-
-filename lirt_m url 'http://192.38.117.59/~mola/lirt_mml.sas'; 
-%include lirt_m;
-
-filename lirt_p url 'http://192.38.117.59/~mola/lirt_ppar.sas'; 
-%include lirt_p;
-
-filename lirt_i url 'http://192.38.117.59/~mola/lirt_icc.sas'; 
-%include lirt_i;
-
-filename lirt_s url 'http://192.38.117.59/~mola/lirt_simu.sas'; 
-%include lirt_s;
-
-filename lirt_s url 'http://192.38.117.59/~mola/lirt_split.sas'; 
-%include lirt_s;
+%let url=https://raw.githubusercontent.com/KarlBangChristensen/LIRT/master;
+filename all url "&url/LIRT_include.sas"; 
+%include all;
 
 
 /******************************************************************/
