@@ -1,5 +1,6 @@
-COS data example
+## COS data example
 
+read data using
 
 ```
 filename cos URL 'https://raw.githubusercontent.com/KarlBangChristensen/LIRT/master/cosdata.csv';
@@ -10,4 +11,10 @@ PROC IMPORT OUT= WORK.sleep1_2
      GETNAMES=YES;
      DATAROW=2; 
 RUN;
+```
+
+include macros
+
+```
+https://raw.githubusercontent.com/KarlBangChristensen/LIRT/master/LIRT_include.sas
 ```
