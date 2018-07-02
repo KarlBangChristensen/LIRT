@@ -10,7 +10,7 @@ NAMES: 	data set with item information and estimates (&out_names from %lirt_mml.
 DIM: 	dimension of latent variable (1 or 2 time points)
 ID: 	variable in DATA holding a unique person id 
 OUT: 	prefix for output data sets
-DELETE: Y/N indicating whether all temporary data sets beginning with an _ should be deleted.*/
+DELETE: Y/N indicating whether all temporary data sets beginning with an _ should be deleted.
 ************************************************************************************************/
 
 %macro LIRT_PPAR(data, 
