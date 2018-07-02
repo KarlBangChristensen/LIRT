@@ -16,8 +16,8 @@ RUN;
 include macros
 
 ```
-%let url=https://raw.githubusercontent.com/KarlBangChristensen/LIRT/master/LIRT_include.sas;
+%let url=https://raw.githubusercontent.com/KarlBangChristensen/LIRT/master;
 
-filename all url "&url/LIRT_include_all.sas"; 
+filename all url "&url/LIRT_include.sas"; 
 %include all;
 ```
