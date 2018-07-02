@@ -1,16 +1,15 @@
-* read data;
-filename cos URL 'https://raw.githubusercontent.com/KarlBangChristensen/LIRT/master/cosdata.csv';
+%let url=https://raw.githubusercontent.com/KarlBangChristensen/LIRT/master;
+filename cos URL "&url/cosdata.csv";
+filename all url "&url/LIRT_include.sas"; 
 
+* read data;
 PROC IMPORT OUT= WORK.sleep1_2 
             DATAFILE= cos
             DBMS=CSV REPLACE;
      GETNAMES=YES;
      DATAROW=2; 
 RUN;
-
-/* Include macros */
-%let url=https://raw.githubusercontent.com/KarlBangChristensen/LIRT/master;
-filename all url "&url/LIRT_include.sas"; 
+* Include macros;
 %include all;
 
 
