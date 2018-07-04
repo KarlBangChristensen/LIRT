@@ -82,6 +82,8 @@ ods exclude all;
 
 		%if &npersons.^=0 %then %do;
 		/* Simulate thetas given the parameters in PDATA */
+		
+			options mprint;
 
 			proc sql noprint;
 			select estimate
@@ -97,6 +99,8 @@ ods exclude all;
 			where parameter='sigma';
 			quit;
 				
+			options nomprint;
+			
 		%end;
 		
 		proc sql noprint;
