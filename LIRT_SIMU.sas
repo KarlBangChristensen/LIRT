@@ -91,7 +91,9 @@ ods exclude all;
 				from &pdata.
 				where parameter='mu';
 			quit;
+			%put pmean er &pmean.;
 			%let pmean=&pmean.;
+			%put pmean er &pmean.;
 
 			proc sql noprint;
 				select estimate**2
@@ -99,7 +101,9 @@ ods exclude all;
 				from &pdata.
 				where parameter='sigma';
 			quit;
+			%put pvar er &pvar.;
 			%let pvar=&pvar.;
+			%put pvar er &pvar.;
 				
 			options nomprint;
 			
