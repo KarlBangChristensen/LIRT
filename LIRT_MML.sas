@@ -162,7 +162,6 @@ ods exclude all;
 
 	data &out._logl;
 	set _logl;
-	where Descr='-2 Log Likelihood';
 	run;
 
 	data _thres_temp _disc_temp _ipar_temp;  
