@@ -86,18 +86,20 @@ ods exclude all;
 			options mprint;
 
 			proc sql noprint;
-			select estimate
-			into :pmean
-			from &pdata.
-			where parameter='mu';
+				select estimate
+				into :pmean
+				from &pdata.
+				where parameter='mu';
 			quit;
+			%let pmean=&pmean.;
 
 			proc sql noprint;
-			select estimate**2
-			into :pvar
-			from &pdata.
-			where parameter='sigma';
+				select estimate**2
+				into :pvar
+				from &pdata.
+				where parameter='sigma';
 			quit;
+			%let pvar=&pvar.;
 				
 			options nomprint;
 			
