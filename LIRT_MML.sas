@@ -859,7 +859,7 @@ ods exclude all;
 	run;
 
 %end;
-* delete temporray data sets;
+* delete temporary data sets;
 %if %upcase(&delete.)=Y %then %do;
 
 	ods output Datasets.Members=_datasets;
