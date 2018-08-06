@@ -113,8 +113,8 @@ ods exclude all;
 
 	ods exclude none;
 		
-	axis1 order=(%eval(&xmin.) to %eval(&xmax.) by 1) length=15 cm value=(H=2) minor=NONE label=(H=2 'Latent variable');
-	axis2 order=(0 to 1 by 0.1) label=(H=2 A=90 'Probability') length=10 cm value=(H=2) minor=NONE;
+	axis1 order=(%eval(&xmin.) to %eval(&xmax.) by 1) /*length=15 cm*/ value=(H=2) minor=NONE label=(H=2 'Latent variable');
+	axis2 order=(0 to 1 by 0.1) label=(H=2 A=90 'Probability') /*length=10 cm*/ value=(H=2) minor=NONE;
 
 	%do _i=1 %to &_ntitle.;
 
@@ -224,8 +224,8 @@ ods exclude all;
 
 	ods exclude none;
 		
-	axis1 order=(%eval(&xmin.) to %eval(&xmax.) by 1) length=15 cm value=(H=2) minor=NONE label=(H=2 'Latent variable');
-	axis2 order=(0 to 1 by 0.1) label=(H=2 A=90 'Probability') length=10 cm value=(H=2) minor=NONE;
+	axis1 order=(%eval(&xmin.) to %eval(&xmax.) by 1) /*length=15 cm*/ value=(H=2) minor=NONE label=(H=2 'Latent variable');
+	axis2 order=(0 to 1 by 0.1) label=(H=2 A=90 'Probability') /*length=10 cm*/ value=(H=2) minor=NONE;
 
 	%do _i=1 %to &_ntitle.;
 
