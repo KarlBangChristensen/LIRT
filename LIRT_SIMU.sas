@@ -74,7 +74,7 @@ If the item scores goes from 0 to MAX then it is assumed that all the scores are
 			OUT,
 			DELETE=Y);
 
-options nomprint nonotes;
+options /*no*/mprint nonotes;
 ods exclude all;
 
 /*********** START OF 1-DIMENSIONAL CASE ***********/
