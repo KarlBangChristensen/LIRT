@@ -534,8 +534,6 @@ run;
 
 %end;
 %if &_nobs2.^=0 %then %do;
-* If time 2 items with og uden LD */
-/* I dette tilfælde eksisterer datasættet '_responses' */
 %if &_nobs_ld.^=0 %then %do;
 
 proc sql;
