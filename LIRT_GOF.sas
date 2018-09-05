@@ -30,7 +30,7 @@ Goodness of fit macro (plots and simulation based tests).
 %macro LIRT_GOF(data, 
 				names, 
 				dim,
-				itemTo=N,
+				item=N,
 				/*id=id,*/ 
 				poppar=none, 
 				fitplot=Y, 
@@ -178,7 +178,7 @@ quit;
 		%end;
 %end;
 
-%if %upcase(&itemTo.) ^= N %then %do;
+%if %upcase(&item.) ^= N %then %do;
 proc sql noprint;
 select unique(name) into :Ditem1-:Ditem&NBitems from &names;
 quit;
@@ -196,19 +196,19 @@ by interval;run;
 %end;
 
 data allthedata;
-set &itemTo;
+set &item;
 run;
 %end;
 
 ods rtf body="&SetPath..rtf" style=JOURNAL;
 
-%if %upcase(&itemTo.) ^= N %then %do;
+%if %upcase(&item.) ^= N %then %do;
 
 		axis1 order=0 to &_maxint by 1 value=(H=2) minor=NONE label=(H=2 'Total score group');
 		axis2 value=(H=2) order=0 to &_max by 1 minor=NONE label=(H=2 A=90 'Mean item score');
 
 		proc gplot data=ALLTHEDATA;
-			title "Mean scores for item &itemTo.";
+			title "Mean scores for item &item.";
 			plot meanv*interval=ITEM_KAT / haxis=axis1 vaxis=axis2;
 			symbol1 v=none i=join w=6 l=1 color=black r=&NBitems;
 		run;
