@@ -1,6 +1,6 @@
 /**********************************************************
 
-Goodness of fit macro (plots and simulation based tests).
+Goodness of fit (GOF) macro creates simulation based plots.
 
 	ITEM: the item for which the fit should be checked
 
