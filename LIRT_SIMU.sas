@@ -1,10 +1,6 @@
 /*************************************************************************************
 
-Macro simulating from the two-dimensional dichotomous Rasch model where item parameters are drawn from a uniform distribution and 
-person parameters from a normal distribution. It is possible to include item specific response dependence drawn from a 
-normal distribution. 
-Marginal maximum likelihood estimation is used for estimation of item parameters and Warms Weighted likelihood estimation
-for estimation of person parameters. 
+macro to simulate data from longitudinal IRT model
 
 NAMES : data set with columns name1 $, name2 $, score, ipar (not threshold!), disc (1 => Rasch item),
 			 ld_item $ (only for time 2 items. Time 1 item on which the time 2 item depend), 
@@ -106,7 +102,7 @@ quit;
 %let pvar=&pvar.;
 %put pvar er &pvar.;
 
-options nomprint;
+
 
 %end;
 
@@ -202,8 +198,8 @@ run;
 /* Create variable 'max' from scores for &out._names */
 
 proc sql;
-create table _names as select *,
-max(score) as max
+create table _names as select name,
+max(score) as max, disc
 from &names.
 group by name;
 quit;
@@ -652,7 +648,7 @@ from _datasets
 where substr(name,1,1)='_';
 quit;
 proc datasets nodetails; 
-delete %do k=1 %to &_ndata.; &&_data&k %end; _datasets;
+/* delete %do k=1 %to &_ndata.; &&_data&k %end; _datasets; */
 run;
 quit;
 %end;
