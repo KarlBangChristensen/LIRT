@@ -1,6 +1,6 @@
 /**********************************************************
 
-Goodness of fit (GOF) macro creates simulation based plots.
+Goodness of fit macro (plots and simulation based tests).
 
 	ITEM: the item for which the fit should be checked
 
@@ -27,22 +27,28 @@ Goodness of fit (GOF) macro creates simulation based plots.
 	OUT: the prefix for the output data set
 
 **********************************************************/
-%macro LIRT_GOF(data, 
+%macro LIRT_GOF(item, 
+				data, 
 				names, 
 				dim,
-				item=N,
 				/*id=id,*/ 
 				poppar=none, 
 				fitplot=Y, 
 				fittest=N, 
 				nsimu=30, 
 				CLASS_SIZE=20, 
-				out=GOF,
-				SetPath="");
+				out=GOF);
 
-ods exclude all;
+%let out=%trim(&out);
+ods listing close;
+ods html close;
 goptions reset=all;
-options nonotes nostimer nomprint;
+options nonotes nomprint;
+
+options mprint;
+
+* Include %LIRT_SIMU;
+filename simu URL 'http://192.38.117.59/~mola/lirt_simu.sas'; %include simu;
 
 * count number of records in data set;
 data _null_; 
@@ -67,19 +73,6 @@ run;
 	/***************/
 
 	%if &dim=1 %then %do;
-
-proc sql noprint;
-select count(unique(name)) into :NBitems from &names;
-quit;
-%let NBitems=&NBitems;
-
-proc sql noprint;
-select unique(name) into :item1-:item&NBitems from &names;
-quit;
-
-%do _iii=1 %to &NBitems;
-
-%LET item=&&item&_iii;
 
 		data _pdata;
 			PARAMETER='sigma'; ESTIMATE=1; output;
@@ -128,7 +121,8 @@ quit;
 
 		* simulate data sets;
 		%lirt_simu(NAMES=&names, DIM=1, NDATA=&nsimu, NPERSONS=&N, PDATA=_pdata, OUT=s);
-		ods exclude all;
+		options nonotes;
+		ods listing close;
 
 		* combine observed and simulated data sets - compute score (item mean rescaled);
 		data _s0 /*(rename=(&id.=id))*/; set &data; dataset=0; run;
@@ -171,67 +165,32 @@ quit;
 		proc means data=_gof2;
 			var &item;
 			class interval dataset;
-			output out=means_&item mean=&item;
+			output out=means mean=mean;
 		run;
 
-		data pl_&item; set means_&item(where=(dataset ne .)); if dataset=0 then dataset=&nsimu+1; run;
-		%end;
-%end;
-
-%if %upcase(&item.) ^= N %then %do;
-proc sql noprint;
-select unique(name) into :Ditem1-:Ditem&NBitems from &names;
-quit;
-
-%do _i=1 %to &NBitems; 
-data Gp_&&Ditem&_i(rename=(&&Ditem&_i=meanV));
-set PL_&&Ditem&_i(where=(dataset=&nsimu+1));
-Item_kat="&&Ditem&_i";
-run;
-%end;
-
-%do _i=1 %to &NBitems; 
-proc sort data=Gp_&&Ditem&_i;
-by interval;run;
-%end;
-
-data allthedata;
-set &item;
-run;
-%end;
-
-ods rtf body="&SetPath..rtf" style=JOURNAL;
-
-%if %upcase(&item.) ^= N %then %do;
-
-		axis1 order=0 to &_maxint by 1 value=(H=2) minor=NONE label=(H=2 'Total score group');
-		axis2 value=(H=2) order=0 to &_max by 1 minor=NONE label=(H=2 A=90 'Mean item score');
-
-		proc gplot data=ALLTHEDATA;
-			title "Mean scores for item &item.";
-			plot meanv*interval=ITEM_KAT / haxis=axis1 vaxis=axis2;
-			symbol1 v=none i=join w=6 l=1 color=black r=&NBitems;
-		run;
-%end;
-%do _iii=1 %to &NBitems;
-
-%LET item=&&item&_iii;
-
-		axis1 order=0 to &_maxint by 1 value=(H=2) minor=NONE label=(H=2 'Total score group');
-		axis2 value=(H=2) order=0 to &_max by 1 minor=NONE label=(H=2 A=90 'Mean item score');
+		axis1 order=0 to &_maxint by 1 value=(H=2) minor=NONE label=(H=2 'total score group');
+		axis2 value=(H=2) order=0 to &_max by 1 minor=NONE label=(H=2 A=90 'mean item score');
 		
-		proc gplot data=pl_&item;
+		ods html;
+		data _plot; set means(where=(dataset ne .)); if dataset=0 then dataset=&nsimu+1; run;
+		proc gplot data=_plot;
 			title "Mean scores for item &item.";
-			plot &item*interval = dataset / haxis=axis1 vaxis=axis2 nolegend;
+			plot mean*interval = dataset / haxis=axis1 vaxis=axis2 nolegend;
 			symbol1 v=none i=join w=3 l=33 color=grey r=&nsimu;
 			symbol2 v=none i=join w=6 l=1 color=black;
 		run;
 		quit;
-%end;
+		ods html close;
 
-	/***************/     /**********************************************************/
-	/**** DIM=2 ****/     /**** Der er ikke tilføjet en løkke for 2 dimensioner. ****/
-	/***************/     /**********************************************************/
+		data &out._GOFPLOT;
+			set _plot;
+		run;
+
+	%end;
+
+	/***************/
+	/**** DIM=2 ****/
+	/***************/
 
 	%if &dim=2 %then %do;
 
@@ -317,7 +276,8 @@ ods rtf body="&SetPath..rtf" style=JOURNAL;
 		/* Simulate from fitted model */
 
 		%lirt_simu(NAMES=&names., DIM=2, NDATA=&nsimu, NPERSONS=&n, PDATA=_pdata, OUT=s, delete=N);
-		ods exclude all;
+		options nonotes;
+		ods listing close;
 
 		data _s0 /*(rename=(&id.=id))*/; set &data; dataset=0; run;
 
@@ -374,6 +334,7 @@ ods rtf body="&SetPath..rtf" style=JOURNAL;
 		run;
 
 		/* read item names from names data set */
+
 		proc sql noprint;
 			select count(unique(name)) into :_nitems from &names;
 		quit;
@@ -399,6 +360,8 @@ ods rtf body="&SetPath..rtf" style=JOURNAL;
 		%end;
 
 		%lirt_simu(NAMES=&names, DIM=1, NDATA=&nsimu, NPERSONS=&N, PDATA=_pdata, OUT=s);
+		options nonotes;
+		ods listing close;
 
 		data _s0 /*(rename=(&id.=id))*/; set &data; dataset=0; run;
 
@@ -452,7 +415,8 @@ ods rtf body="&SetPath..rtf" style=JOURNAL;
 
 	%if &dim=2 %then %do;
 
-		/* read item names from names data set */		
+		/* read item names from names data set */
+		
 		proc sql noprint;
 			select count(distinct(name1)) 
 			into :_nitems1
@@ -491,10 +455,11 @@ ods rtf body="&SetPath..rtf" style=JOURNAL;
 		%end;
 
 		/* Find out whether ITEM (the item to be plotted) is a time 1 or time 2 item */
+
 		data _names;
-			set &names.;
-			if name1="&item" then time=1;
-			if name2="&item" then time=2;
+		set &names.;
+		if name1="&item" then time=1;
+		if name2="&item" then time=2;
 		run;
 
 		proc sql noprint;
@@ -530,7 +495,10 @@ ods rtf body="&SetPath..rtf" style=JOURNAL;
 		run;
 
 		/* Simulate from fitted model */
+
 		%lirt_simu(NAMES=&names., DIM=2, NDATA=&nsimu, NPERSONS=&n, PDATA=_pdata, OUT=s);
+		options nonotes;
+		ods listing close;
 
 		data _s0 /*(rename=(&id.=id))*/; set &data; dataset=0; run;
 
@@ -600,6 +568,8 @@ proc datasets nodetails nolist;
 	delete s_simu1-s_simu&NSIMU;
 run;
 quit;
+ods listing;
+ods html;
 
 %if %upcase(&fittest.)=Y %then %do;
 	
@@ -611,5 +581,4 @@ quit;
 	proc print data=&out._GOF noobs; 
 	run;
 %end;
-ods exclude none;
 %mend LIRT_GOF;
