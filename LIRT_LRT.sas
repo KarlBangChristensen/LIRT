@@ -1,4 +1,4 @@
-%macro LLRtest(H0_data1,HA_data2,Split);
+%macro LIRT_LRT(H0_data1,HA_data2,Split);
     %LET Split=&Split.;
     proc sql noprint;
         select Value format=12.11 into :_ll_H0 from &H0_data1._logl;
