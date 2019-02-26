@@ -113,7 +113,7 @@ ods exclude all;
 				end;
 			%end;
 		%end;
-		drop lower upper;
+		drop estimate stderr lower upper;
 	run;
 	data _names;
 		set &names.;
@@ -125,7 +125,7 @@ ods exclude all;
 	run;
 	proc sql;
 		create table _ipar1 as select a.*,
-		b.estimate as ipar label='Item parameter'
+		b.ipar as ipar label='Item parameter'
 		from _names a left join &out._ipar b
 		on a.name=b.item and a.score=b.score;
 	quit; 
