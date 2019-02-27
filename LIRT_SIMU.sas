@@ -153,14 +153,13 @@ proc sql;
 create table _items1 as select a.*,
 b.id,
 b.theta
-/* Dette datasæt eksisterer ikke! */
 from _names a left join _theta b 
 on a.join=b.join;
 quit;
 
 proc sql;
 create table _prob1 as select *,
-exp(disc*(theta*score+ipar))/(1+sum(exp(disc*(theta*score+ipar)))) as prob
+exp(disc*(theta*score+ipar))/(sum(exp(disc*(theta*score+ipar)))) as prob
 from _items1
 group by name, id;
 quit;
@@ -387,7 +386,7 @@ quit;
 
 proc sql;
 create table _prob1 as select *,
-exp(disc*(theta1*score+ipar))/(1+sum(exp(disc*(theta1*score+ipar)))) as prob
+exp(disc*(theta1*score+ipar))/(sum(exp(disc*(theta1*score+ipar)))) as prob
 from _items11
 group by name1, id;
 quit;
@@ -416,7 +415,7 @@ quit;
 
 proc sql;
 create table _prob2 as select *,
-exp(disc*(theta2*score+ipar))/(1+sum(exp(disc*(theta2*score+ipar)))) as prob
+exp(disc*(theta2*score+ipar))/(sum(exp(disc*(theta2*score+ipar)))) as prob
 from _items22
 group by name2, id;
 quit;
@@ -495,7 +494,7 @@ quit;
 
 proc sql;
 create table _prob_ld as select *,
-exp(disc*(theta2*score+ipar))/(1+sum(exp(disc*(theta2*score+ipar)))) as prob
+exp(disc*(theta2*score+ipar))/(sum(exp(disc*(theta2*score+ipar)))) as prob
 from _ld_items1
 group by name2, id;
 quit;
@@ -540,9 +539,6 @@ on a.id=b.id;
 quit; 
 
 %end;
-/* Hvis der kun er tid 2 items uden LD */
-/* Her ekisterer datasættet _resp_ld_t ikke (så tjek om der overhovedet er noget at merge på), kun _responses */
-/* Skal _responses bare set'es?? */
 %else %do;
 
 data _responses_all;
@@ -551,7 +547,6 @@ run;
 
 %end;
 %end;
-/* Hvis der kun er tid 2 items med LD */
 %else %do;
 
 proc sql;
