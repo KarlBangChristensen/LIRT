@@ -178,7 +178,6 @@ data _resp1;
 set _prob1_t;
 %do i=1 %to &_nitems.;
 if name="&&i&i" then do;
-_0=1 %do h=1 %to &&max&i; -_&h. %end;;
 resp=rand('table' %do score=0 %to &&max&i; ,_&score. %end;)-1;
 end;
 %end;
