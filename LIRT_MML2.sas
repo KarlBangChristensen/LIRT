@@ -109,7 +109,7 @@ ods exclude all;
 			if item="&&item&_i" and score=1 then ipar=-estimate;
 			%do _h=1 %to &&max&_i-1;
 				if item="&&item&_i" and score=&_h+1 then do;
-					ipar=-estimate-&&it&_i._thres&_h.;
+					ipar=estimate-&&it&_i._thres&_h.;
 				end;
 			%end;
 		%end;
