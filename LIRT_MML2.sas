@@ -111,7 +111,7 @@ ods exclude all;
 				%do _h=1 %to &&max&_i;
 					if score=&_h then ipar=0 %do _k=1 %to &_h; -&&it&_i._thres&_h.; %end;
 				%end;
-			%end;
+			end;
 		%end;
 		drop estimate stderr lower upper;
 	run;
