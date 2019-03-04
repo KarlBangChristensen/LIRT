@@ -88,72 +88,81 @@ ods exclude all;
 		var %do _i=1 %to &_nitems.; &&item&_i %end;;
 		model %do _i=1 %to &_nitems.; &&item&_i %end;/resfunc=gpc;
 	run;
-	data &out._disc &out._thres;  
-		set _item_parameters(drop=ProbT);
-		score=substr(Parameter,6,1)*1;
-		lower=estimate-1.96*stderr;
-		upper=estimate+1.96*stderr;
-		if parameter='Slope' then output &out._disc; 
-		else output &out._thres;
-	run;
-	%do _i=1 %to &_nitems;
-		proc sql;
-			select estimate into :it&_i._thres1-:it&_i._thres&&max&_i
-			from &out._thres
-			where item="&&item&_i";
-		quit;
+	proc sql noprint; 
+		select reason into :reason from out_&sim._conv;
+	quit;	
+	%let reason=&reason.;
+	%put &reason;
+	%if ("&reason"=='') %then %do;
 	%end;
-	%do _i=1 %to &_nitems;
-		%put it&_i._thres1 er 999;
-		%put it&_i._thres&&max&_i er 999;
-	%end;
-	data &out._ipar;
-		set &out._thres;
+	%else %do;
+		data &out._disc &out._thres;  
+			set _item_parameters(drop=ProbT);
+			score=substr(Parameter,6,1)*1;
+			lower=estimate-1.96*stderr;
+			upper=estimate+1.96*stderr;
+			if parameter='Slope' then output &out._disc; 
+			else output &out._thres;
+		run;
 		%do _i=1 %to &_nitems;
-			if item="&&item&_i" then do;
-				%do _h=1 %to &&max&_i;
-					if score=&_h then ipar=0 %do _k=1 %to &_h; -&&it&_i._thres&_h. %end;;
-				%end;
-			end;
+			proc sql;
+				select estimate into :it&_i._thres1-:it&_i._thres&&max&_i
+				from &out._thres
+				where item="&&item&_i";
+			quit;
 		%end;
-		drop estimate stderr lower upper;
-	run;
-	data _names;
-		set &names.;
-		label score='Score';
-		order=_n_;
-		do score=0 to max;
-			output;
-		end;
-	run;
-	proc sql;
-		create table _ipar1 as select a.*,
-		b.ipar as ipar label='Item parameter'
-		from _names a left join &out._ipar b
-		on a.name=b.item and a.score=b.score;
-	quit; 
-	proc sql;
-		create table _ipar2 as select a.*,
-		b.estimate as thres label='Item threshold'
-		from _ipar1 a left join &out._thres b
-		on a.name=b.item and a.score=b.score;
-	quit;
-	proc sql;
-		create table _ipar3 as select a.*,
-		b.estimate as disc label='Item discrimination'
-		from _ipar2 a left join &out._disc b
-		on a.name=b.item;
-	quit;
-	data _ipar3;
-		set _ipar3;
-		if score=0 then do;
-			ipar=0;
-			thres=0;
-		end;
-	run;
-	proc sort data=_ipar3 out=&out._names (drop=order disc_yn);
-		by order score;
-	run;
+		%do _i=1 %to &_nitems;
+			%put it&_i._thres1 er 999;
+			%put it&_i._thres&&max&_i er 999;
+		%end;
+		data &out._ipar;
+			set &out._thres;
+			%do _i=1 %to &_nitems;
+				if item="&&item&_i" then do;
+					%do _h=1 %to &&max&_i;
+						if score=&_h then ipar=0 %do _k=1 %to &_h; -&&it&_i._thres&_h. %end;;
+					%end;
+				end;
+			%end;
+			drop estimate stderr lower upper;
+		run;
+		data _names;
+			set &names.;
+			label score='Score';
+			order=_n_;
+			do score=0 to max;
+				output;
+			end;
+		run;
+		proc sql;
+			create table _ipar1 as select a.*,
+			b.ipar as ipar label='Item parameter'
+			from _names a left join &out._ipar b
+			on a.name=b.item and a.score=b.score;
+		quit; 
+		proc sql;
+			create table _ipar2 as select a.*,
+			b.estimate as thres label='Item threshold'
+			from _ipar1 a left join &out._thres b
+			on a.name=b.item and a.score=b.score;
+		quit;
+		proc sql;
+			create table _ipar3 as select a.*,
+			b.estimate as disc label='Item discrimination'
+			from _ipar2 a left join &out._disc b
+			on a.name=b.item;
+		quit;
+		data _ipar3;
+			set _ipar3;
+			if score=0 then do;
+				ipar=0;
+				thres=0;
+			end;
+		run;
+		proc sort data=_ipar3 out=&out._names (drop=order disc_yn);
+			by order score;
+		run;
+	%end;
 %end;
 %else %if &dim.=2 %then %do;
 	data _items _items1 _items2;
