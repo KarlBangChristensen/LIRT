@@ -80,7 +80,7 @@ ods exclude all;
 %if &npersons.^=0 %then %do;
 /* Simulate thetas given the parameters in PDATA */
 
-options mprint;
+
 
 proc sql noprint;
 select estimate
