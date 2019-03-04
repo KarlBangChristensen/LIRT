@@ -175,6 +175,7 @@ var prob;
 run;
 
 data _resp1;
+call streaminit(12);
 set _prob1_t;
 %do i=1 %to &_nitems.;
 if name="&&i&i" then do;
