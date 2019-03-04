@@ -89,7 +89,7 @@ ods exclude all;
 		model %do _i=1 %to &_nitems.; &&item&_i %end;/resfunc=gpc;
 	run;
 	proc sql noprint; 
-		select reason into :reason from out_&sim._conv;
+		select reason into :reason from &out._conv;
 	quit;	
 	%let reason=&reason.;
 	%put &reason;
