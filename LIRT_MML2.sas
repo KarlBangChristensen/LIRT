@@ -93,7 +93,7 @@ ods exclude all;
 	quit;	
 	%let reason=&reason.;
 	%put &reason;
-	%if ("&reason"=='') %then %do;
+	%if ("&reason"='') %then %do;
 	%end;
 	%else %do;
 		data &out._disc &out._thres;  
