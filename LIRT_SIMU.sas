@@ -80,17 +80,13 @@ ods exclude all;
 %if &npersons.^=0 %then %do;
 /* Simulate thetas given the parameters in PDATA */
 
-
-
 proc sql noprint;
 select estimate
 into :pmean
 from &pdata.
 where parameter='mu';
 quit;
-%put pmean er &pmean.;
 %let pmean=&pmean.;
-%put pmean er &pmean.;
 
 proc sql noprint;
 select estimate**2
@@ -98,11 +94,7 @@ into :pvar
 from &pdata.
 where parameter='sigma';
 quit;
-%put pvar er &pvar.;
 %let pvar=&pvar.;
-%put pvar er &pvar.;
-
-
 
 %end;
 
