@@ -52,6 +52,7 @@ DELETE: indicator telling macro to delete temporary data sets
 
 options nomprint nonotes;
 ods exclude all;
+%local status;
 
 %if &dim.=1 %then %do;
 
@@ -741,4 +742,4 @@ ods exclude all;
 %end;
 options notes;
 ods exclude none;
-exit: %mend LIRT_MML2;
+%exit: %mend LIRT_MML2;
