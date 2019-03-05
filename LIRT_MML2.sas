@@ -89,6 +89,9 @@ ods exclude all;
 		var %do _i=1 %to &_nitems.; &&item&_i %end;;
 		model %do _i=1 %to &_nitems.; &&item&_i %end;/resfunc=gpc;
 	run;
+	
+	options mprint;
+	
 	proc sql noprint; 
 		select reason into :reason from &out._conv;
 	quit;	
@@ -98,6 +101,9 @@ ods exclude all;
 		%put Exiting macro;
 		%goto exit;
 	%end;
+	
+	optionsno mprint;
+	
 	%else %do;
 		data &out._disc &out._thres;  
 			set _item_parameters(drop=ProbT);
