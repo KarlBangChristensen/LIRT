@@ -93,7 +93,7 @@ ods exclude all;
 	quit;	
 	%let reason=&reason.;
 	%put &reason;
-	%if ("&reason"='') %then %do;
+	%if ("&reason"='') %then %goto exit;
 	%end;
 	%else %do;
 		data &out._disc &out._thres;  
@@ -740,6 +740,7 @@ ods exclude all;
 	quit;
 
 %end;
+exit:
 options notes;
 ods exclude none;
 %mend LIRT_MML2;
