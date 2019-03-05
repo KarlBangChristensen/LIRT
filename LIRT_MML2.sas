@@ -94,7 +94,6 @@ ods exclude all;
 	%let reason=&reason.;
 	%put &reason;
 	%if ("&reason"='') %then %goto exit;
-	%end;
 	%else %do;
 		data &out._disc &out._thres;  
 			set _item_parameters(drop=ProbT);
