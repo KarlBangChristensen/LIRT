@@ -102,7 +102,7 @@ ods exclude all;
 		%goto exit;
 	%end;
 	
-	optionsno mprint;
+	options nomprint;
 	
 	%else %do;
 		data &out._disc &out._thres;  
