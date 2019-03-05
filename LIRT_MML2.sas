@@ -739,6 +739,6 @@ ods exclude all;
 	quit;
 
 %end;
-exit: options notes;
+options notes;
 ods exclude none;
-%mend LIRT_MML2;
+exit: %mend LIRT_MML2;
