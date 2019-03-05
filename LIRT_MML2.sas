@@ -94,7 +94,7 @@ ods exclude all;
 	quit;	
 	%let reason=&reason.;
 	%put &reason;
-	%if ("&reason"='') %then %do; 
+	%if ("&reason"=' ') %then %do; 
 		%put Exiting macro;
 		%goto exit;
 	%end;
