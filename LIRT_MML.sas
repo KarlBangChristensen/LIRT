@@ -93,19 +93,12 @@ ods exclude all;
 		output;
 	%end;
 	run;
-
-	/*******************************************/
-	/* start of item parameter estimation part */
-	/*******************************************/
-
-	/* direct output to files */
-	ods output nlmixed.ConvergenceStatus=&out._conv;
-	ods output nlmixed.additionalestimates=_item_parameters;
-	ods output nlmixed.fitstatistics=_logl;
-
 	/* numerical maximization using PROC NLMIXED */
 	%if %upcase("&PROC")="NLMIXED" %then %do;
 		proc nlmixed data=_new;
+		ods output nlmixed.ConvergenceStatus=&out._conv;
+		ods output nlmixed.additionalestimates=_item_parameters;
+		ods output nlmixed.fitstatistics=_logl;
 		parms 
 		eta1_1=0
 		%if &max1>1 %then %do;
@@ -208,7 +201,8 @@ ods exclude all;
 		quit;
 	%end;
 	%else %if %upcase("&PROC")="IRT" %then %do;
-	
+		proc irt;
+		run;
 	%end;
 	%else %goto exit;
 	/* Make datasets to use in %LIRT_ICC and %LIRT_SIMU */	
