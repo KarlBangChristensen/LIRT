@@ -893,5 +893,5 @@ ods exclude all;
 %end;
 options notes;
 ods exclude none;
-exit: %mend LIRT_MML;
+%exit: %mend LIRT_MML;
 
