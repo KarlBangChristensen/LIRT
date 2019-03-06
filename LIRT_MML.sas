@@ -56,6 +56,8 @@ DELETE: indicator telling macro to delete temporary data sets
 options nomprint nonotes;
 ods exclude all;
 
+%let PROC=&PROC;
+
 %if &dim.=1 %then %do;
 
 	proc sql noprint;
@@ -102,7 +104,7 @@ ods exclude all;
 	ods output nlmixed.fitstatistics=_logl;
 
 	/* numerical maximization using PROC NLMIXED */
-	%if %trim(%upcase("&PROC"))='NLMIXED' %then %do;
+	%if %upcase("&PROC"))="NLMIXED" %then %do;
 		proc nlmixed data=_new;
 		parms 
 		eta1_1=0
