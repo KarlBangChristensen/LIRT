@@ -204,7 +204,7 @@ ods exclude all;
 		proc irt;
 		run;
 	%end;
-	%if %upcase("&PROC") ne "NLMIXED" %and %upcase("&PROC") ne "IRT" %then %do; 
+	%if (%upcase("&PROC") ne "NLMIXED" %and %upcase("&PROC") ne "IRT") %then %do; 
 		%put PROC must be NLMIXED or IRT - Exiting macro;
 		%goto exit;
 	%end;
