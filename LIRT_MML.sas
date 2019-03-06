@@ -211,7 +211,6 @@ ods exclude all;
 	
 	%end;
 	%else %goto exit;
-	%end;
 	/* Make datasets to use in %LIRT_ICC and %LIRT_SIMU */	
 	data _ipar0;
 	set &out._ipar;
