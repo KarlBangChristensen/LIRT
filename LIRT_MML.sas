@@ -104,13 +104,7 @@ ods exclude all;
 	ods output nlmixed.fitstatistics=_logl;
 
 	/* numerical maximization using PROC NLMIXED */
-	
-	OPTIONS MPRINT;
-	
 	%if %upcase("&PROC")="NLMIXED" %then %do;
-	
-	OPTIONS NOMPRINT;
-	
 		proc nlmixed data=_new;
 		parms 
 		eta1_1=0
@@ -171,51 +165,53 @@ ods exclude all;
 			%end; 
 		%end;
 		run;
+		data &out._logl;
+		set _logl;
+		run;
+
+		data _thres_temp _disc_temp _ipar_temp;  
+		set _item_parameters;
+		label parameter='Parameter';
+		parameter=scan(label,1,'(');
+		if scan(label,-1,'(')='threshold)' then output _thres_temp; 
+		else if scan(label,-1,'(')='discrimination)' then output _disc_temp;
+		else output _ipar_temp;
+		run;
+
+		proc sql;
+		create table &out._ipar as select
+		parameter,
+		estimate,
+		StandardError,
+		lower,
+		upper
+		from _ipar_temp;
+		quit;
+
+		proc sql;
+		create table &out._thres as select
+		parameter,
+		estimate,
+		StandardError,
+		lower,
+		upper
+		from _thres_temp;
+		quit;
+		proc sql;
+		create table &out._disc as select
+		parameter,
+		estimate,
+		StandardError,
+		lower,
+		upper
+		from _disc_temp;
+		quit;
 	%end;
-
-	data &out._logl;
-	set _logl;
-	run;
-
-	data _thres_temp _disc_temp _ipar_temp;  
-	set _item_parameters;
-	label parameter='Parameter';
-	parameter=scan(label,1,'(');
-	if scan(label,-1,'(')='threshold)' then output _thres_temp; 
-	else if scan(label,-1,'(')='discrimination)' then output _disc_temp;
-	else output _ipar_temp;
-	run;
-
-	proc sql;
-	create table &out._ipar as select
-	parameter,
-	estimate,
-	StandardError,
-	lower,
-	upper
-	from _ipar_temp;
-	quit;
+	%else %if %upcase("&PROC")="NLMIXED" %then %do;
 	
-	proc sql;
-	create table &out._thres as select
-	parameter,
-	estimate,
-	StandardError,
-	lower,
-	upper
-	from _thres_temp;
-	quit;
-	
-	proc sql;
-	create table &out._disc as select
-	parameter,
-	estimate,
-	StandardError,
-	lower,
-	upper
-	from _disc_temp;
-	quit;
-	
+	%end;
+	%else %goto exit;
+	%end;
 	/* Make datasets to use in %LIRT_ICC and %LIRT_SIMU */	
 	data _ipar0;
 	set &out._ipar;
@@ -904,5 +900,5 @@ ods exclude all;
 %end;
 options notes;
 ods exclude none;
-%mend LIRT_MML;
+exit: %mend LIRT_MML;
 
