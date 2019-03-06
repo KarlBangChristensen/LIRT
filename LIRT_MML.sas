@@ -204,7 +204,11 @@ ods exclude all;
 		proc irt;
 		run;
 	%end;
-	%else %goto exit;
+	%else %then %do; 
+		%put PROC must be NLMIXED or IRT - Exiting macro;
+		%goto exit;
+	%end;
+	
 	/* Make datasets to use in %LIRT_ICC and %LIRT_SIMU */	
 	data _ipar0;
 	set &out._ipar;
