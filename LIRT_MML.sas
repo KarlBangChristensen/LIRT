@@ -104,7 +104,13 @@ ods exclude all;
 	ods output nlmixed.fitstatistics=_logl;
 
 	/* numerical maximization using PROC NLMIXED */
+	
+	OPTIONS MPRINT;
+	
 	%if %upcase("&PROC")="NLMIXED" %then %do;
+	
+	OPTIONS NOMPRINT;
+	
 		proc nlmixed data=_new;
 		parms 
 		eta1_1=0
