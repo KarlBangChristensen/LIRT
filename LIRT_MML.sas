@@ -207,7 +207,7 @@ ods exclude all;
 		from _disc_temp;
 		quit;
 	%end;
-	%else %if %upcase("&PROC")="NLMIXED" %then %do;
+	%else %if %upcase("&PROC")="IRT" %then %do;
 	
 	%end;
 	%else %goto exit;
