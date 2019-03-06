@@ -41,6 +41,8 @@ OUT: prefix of output data sets
 	data set OUT_logl
 	data set OUT_conv
 
+PROC: indicates which SAS procedure to use (PROC NLMIXED or PROC IRT)
+
 DELETE: indicator telling macro to delete temporary data sets
 **************************************************************************/
 
@@ -48,6 +50,7 @@ DELETE: indicator telling macro to delete temporary data sets
 		names, 
 		dim, 
 		out, 
+		PROC=NLMIXED,
 		delete=Y);
 
 options nomprint nonotes;
@@ -99,66 +102,68 @@ ods exclude all;
 	ods output nlmixed.fitstatistics=_logl;
 
 	/* numerical maximization using PROC NLMIXED */
-	proc nlmixed data=_new;
-	parms 
-	eta1_1=0
-	%if &max1>1 %then %do;
-		%do _h=2 %to &max1.; 
-			,eta1_&_h.=0 
-		%end;
-	%end;
-	%if &d1.=Y %then %do;
-		,alpha1=1	 
-	%end;
-	%if &_nitems.>1 %then %do;
-		%do _i=2 %to &_nitems.;
-			%do _h=1 %to &&max&_i; 
-				,eta&_i._&_h.=0 
-			%end; 
-			%if &&d&_i=Y %then %do;
-				,alpha&_i.=1	 
+	%if %trim(%upcase(&PROC.))='NLMIXED' %then %do;
+		proc nlmixed data=_new;
+		parms 
+		eta1_1=0
+		%if &max1>1 %then %do;
+			%do _h=2 %to &max1.; 
+				,eta1_&_h.=0 
 			%end;
 		%end;
-	%end;
-	%if &disc.>0 %then %do;
-		,alpha=1
-	%end;;
-	%do _i=1 %to &_nitems.; 
-		%if &&d&_i=Y %then %do;		
-			_denom=1 %do _k=1 %to &&max&_i; 
-				+exp(alpha&_i.*(&_k*_theta+eta&_i._&_k.)) 
-			%end;;
-			if item="&&item&_i" and value=0 then ll=-log(_denom);
-			%do _h=1 %to &&max&_i;
-				if item="&&item&_i" and value=&_h then ll=alpha&_i.*(&_h*_theta+eta&_i._&_h.)-log(_denom);
+		%if &d1.=Y %then %do;
+			,alpha1=1	 
+		%end;
+		%if &_nitems.>1 %then %do;
+			%do _i=2 %to &_nitems.;
+				%do _h=1 %to &&max&_i; 
+					,eta&_i._&_h.=0 
+				%end; 
+				%if &&d&_i=Y %then %do;
+					,alpha&_i.=1	 
+				%end;
+			%end;
+		%end;
+		%if &disc.>0 %then %do;
+			,alpha=1
+		%end;;
+		%do _i=1 %to &_nitems.; 
+			%if &&d&_i=Y %then %do;		
+				_denom=1 %do _k=1 %to &&max&_i; 
+					+exp(alpha&_i.*(&_k*_theta+eta&_i._&_k.)) 
+				%end;;
+				if item="&&item&_i" and value=0 then ll=-log(_denom);
+				%do _h=1 %to &&max&_i;
+					if item="&&item&_i" and value=&_h then ll=alpha&_i.*(&_h*_theta+eta&_i._&_h.)-log(_denom);
+				%end; 
+			%end;
+			%else %if &&d&_i^=Y %then %do;		
+				_denom=1 %do _k=1 %to &&max&_i; 
+					/* sæt alpha ind fælles for 1PL items */
+					+exp(alpha*(&_k*_theta+eta&_i._&_k.)) 
+				%end;;
+				if item="&&item&_i" and value=0 then ll=-log(_denom);
+				%do _h=1 %to &&max&_i;
+					if item="&&item&_i" and value=&_h then ll=alpha*(&_h*_theta+eta&_i._&_h.)-log(_denom);
+				%end; 
+			%end;
+		%end;
+		model value~general(ll);
+		random _theta ~ normal(0,1) subject=person;	
+		%do _i=1 %to &_nitems.; 
+			%if &&d&_i=Y %then %do;
+				estimate "&&item&_i. (discrimination)" alpha&_i.;
+			%end; 
+			%else %if &&d&_i^=Y %then %do;
+				estimate "&&item&_i. (discrimination)" alpha;
+			%end; 
+			%do _h=1 %to &&max&_i; 
+				estimate "&&item&_i.|&_h. (threshold)" -eta&_i._&_h. %if &_h.>1 %then %do; +eta&_i._%eval(&_h.-1) %end;; 
+				estimate "&&item&_i.|&_h." eta&_i._&_h.; 
 			%end; 
 		%end;
-		%else %if &&d&_i^=Y %then %do;		
-			_denom=1 %do _k=1 %to &&max&_i; 
-				/* sæt alpha ind fælles for 1PL items */
-				+exp(alpha*(&_k*_theta+eta&_i._&_k.)) 
-			%end;;
-			if item="&&item&_i" and value=0 then ll=-log(_denom);
-			%do _h=1 %to &&max&_i;
-				if item="&&item&_i" and value=&_h then ll=alpha*(&_h*_theta+eta&_i._&_h.)-log(_denom);
-			%end; 
-		%end;
+		run;
 	%end;
-	model value~general(ll);
-	random _theta ~ normal(0,1) subject=person;	
-	%do _i=1 %to &_nitems.; 
-		%if &&d&_i=Y %then %do;
-			estimate "&&item&_i. (discrimination)" alpha&_i.;
-		%end; 
-		%else %if &&d&_i^=Y %then %do;
-			estimate "&&item&_i. (discrimination)" alpha;
-		%end; 
-		%do _h=1 %to &&max&_i; 
-			estimate "&&item&_i.|&_h. (threshold)" -eta&_i._&_h. %if &_h.>1 %then %do; +eta&_i._%eval(&_h.-1) %end;; 
-			estimate "&&item&_i.|&_h." eta&_i._&_h.; 
-		%end; 
-	%end;
-	run;
 
 	data &out._logl;
 	set _logl;
