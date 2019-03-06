@@ -82,6 +82,9 @@ ods exclude all;
 	/*******************************************/
 	/* start of item parameter estimation part */
 	/*******************************************/
+	
+	OPTIONS MPRINT;
+	
 	proc IRT data=&data.;
 		ods output IRT.Optimization.ConvergenceStatus=&out._conv;
 		ods output IRT.FitStatistics.FitStatistics=&out._logl;
@@ -89,6 +92,8 @@ ods exclude all;
 		var %do _i=1 %to &_nitems.; &&item&_i %end;;
 		model %do _i=1 %to &_nitems.; &&item&_i %end;/resfunc=gpc;
 	run;
+	
+	OPTIONS NOMPRINT;
 	
 	proc sql noprint; 
 		select reason into :reason from &out._conv;
