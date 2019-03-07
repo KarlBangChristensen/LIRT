@@ -84,7 +84,7 @@ ods exclude all;
 	quit;
 	
 	%do _i=1 %to &_nitems;
-	%put item &_i is &&_item&_i PCM is &&PCM&_i;
+	%put item &_i is &&item&_i PCM is &&PCM&_i;
 	%end;
 
 	/*******************************************/
