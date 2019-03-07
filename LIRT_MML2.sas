@@ -194,9 +194,6 @@ ods exclude all;
 	from &names.;
 	quit;
 
-	/* rec1 and rec2 are variables indicating whether unachored items are present or not. */
-	/* Kunne have nøjedes med at gøre det til tid 1 f.eks. */
-
 	proc sql noprint;
 	select count(*)
 	into :rec1
@@ -235,12 +232,8 @@ ods exclude all;
 		into :_nitems2
 		from _items2;
 		quit;
-
 		%let _nitems2=&_nitems2.;
-
 	%end;
-
-	/* Gem eventuelt også item_text for at kunne matche estimerede parametre med items */
 
 	proc sql noprint;
 	select distinct(name1), name2, max, disc_yn
@@ -250,20 +243,16 @@ ods exclude all;
 		 :d1-:d&_nitems.
 	from _items;
 	quit;
-
 	%if &rec1>0 %then %do;
-
 		proc sql noprint;
-		select distinct(name1), max, disc_yn
-		into :item1_%eval(&_nitems.+1)-:item1_%eval(&_nitems.+&_nitems1.), 
-			 :max%eval(&_nitems.+1)-:max%eval(&_nitems.+&_nitems1.),	 
-			 :d%eval(&_nitems.+1)-:d%eval(&_nitems.+&_nitems1.)
+		select distinct(name1), disc_yn
+		into 
+		:d_item1_1-:d_item1_&_nitems1., 
+		:YN_d%eval(&_nitems.+1)-:d%eval(&_nitems.+&_nitems1.)
 		from _items1;
 		quit;
-
 	%end;
 	%if &rec2>0 %then %do;
-
 		proc sql noprint;
 		select distinct(name2), max, disc_yn
 		into :item2_%eval(&_nitems.+&_nitems1.+1)-:item2_%eval(&_nitems.+&_nitems1.+&_nitems2.),
@@ -271,57 +260,23 @@ ods exclude all;
 			 :d%eval(&_nitems.+&_nitems1.+1)-:d%eval(&_nitems.+&_nitems1.+&_nitems2.)
 		from _items2;
 		quit;
-
 	%end;
-
-	data _new; 
-	format value 3. item $20.;
-	set &data.; 
-	%do _i=1 %to &_nitems.; 
-		item="&&item1_&_i"; 
-		value=&&item1_&_i; 
-		person=_N_; 
-		output;
-		item="&&item2_&_i"; 
-		value=&&item2_&_i; 
-		person=_N_; 
-		output;
-	%end;
-	%if &rec1>0 %then %do;
-		%do _i=%eval(&_nitems.+1) %to %eval(&_nitems.+&_nitems1.); 
-			item="&&item1_&_i"; 
-			value=&&item1_&_i; 
-			person=_N_; 
-			output;
-		%end;
-	%end;
-	%if &rec2>0 %then %do;
-		%do _i=%eval(&_nitems.+&_nitems1.+1) %to %eval(&_nitems.+&_nitems1.+&_nitems2.); 
-			item="&&item2_&_i"; 
-			value=&&item2_&_i; 
-			person=_N_; 
-			output;
-		%end;
-	%end;
+	
+	*ods output nlmixed.ConvergenceStatus=&out._conv;
+	*ods output nlmixed.parameterestimates=_item_parameters1;
+	*ods output nlmixed.additionalestimates=_item_parameters2;
+	*ods output nlmixed.fitstatistics=_logl;
+	
+	OPTIONS MPRINT;
+	
+	proc irt data=&data;
+		var 
+		%do _i=1 %to %eval(&_nitems.+&_nitems1.);  &&item1_&_i %end;
+		%do _i=%eval(&_nitems.+&_nitems1.+1) %to %eval(&_nitems.+&_nitems1.+&_nitems2.);  &&item2_&_i %end;
+		;
 	run;
-
-	/*******************************************/
-	/* start of item parameter estimation part */
-	/*******************************************/
-
-	/* direct output to files */
-	ods output nlmixed.ConvergenceStatus=&out._conv;
-	ods output nlmixed.parameterestimates=_item_parameters1;
-	ods output nlmixed.additionalestimates=_item_parameters2;
-	ods output nlmixed.fitstatistics=_logl;
-
-	/* numerical maximization using PROC NLMIXED */
-	proc nlmixed data=_new;
-	parms 
-	mu=0,
-	rho=.5,
-	sigma=1
-	/* Items with no item drift */
+	
+	OPTIONS NOMPRINT;
 	%do _i=1 %to &_nitems.; 
 		%if &&d&_i=Y %then %do;
 			%do _h=1 %to &&max&_i; 
