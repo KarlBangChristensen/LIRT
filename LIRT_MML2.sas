@@ -180,7 +180,7 @@ ods exclude all;
 		run;
 	%end;
 %end;
-%else %if &dim.=2 %then %do;
+%if &dim.=2 %then %do;
 	data _items _items1 _items2;
 	set &names.;
 	if name1^=' ' and  name2^=' ' then output _items;
