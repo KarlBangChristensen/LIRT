@@ -41,8 +41,6 @@ OUT: prefix of output data sets
 	data set OUT_logl
 	data set OUT_conv
 
-PROC: indicates which SAS procedure to use (PROC NLMIXED or PROC IRT)
-
 DELETE: indicator telling macro to delete temporary data sets
 **************************************************************************/
 
@@ -50,13 +48,10 @@ DELETE: indicator telling macro to delete temporary data sets
 		names, 
 		dim, 
 		out, 
-		PROC=NLMIXED,
 		delete=Y);
 
 options nomprint nonotes;
 ods exclude all;
-
-%let PROC=&PROC;
 
 %if &dim.=1 %then %do;
 
@@ -75,244 +70,114 @@ ods exclude all;
 		 :d1-:d&_nitems.
 	from &names.;
 	quit;
-	
-	* only used for initial values in parms statement;
+
 	proc sql noprint;
 	select sum((disc_yn^='Y'))
 	into :disc
 	from &names.;
 	quit;
 
-	data _new; 
-	format value 3. item $20.;
-	set &data.; 
-	%do _i=1 %to &_nitems.; 
-		item="&&item&_i"; 
-		value=&&item&_i; 
-		person=_N_; 
-		output;
+	proc sql noprint;
+	select (disc_yn^='Y') into :PCM1-:PCM&_nitems.
+	from &names.;
+	quit;
+	
+	%do _i=1 %to &_nitems;
+	%let PCM&_i=&&PCM&_i;
 	%end;
+
+	/*******************************************/
+	/* start of item parameter estimation part */
+	/*******************************************/	
+	proc IRT data=&data.;
+		ods output IRT.Optimization.ConvergenceStatus=&out._conv;
+		ods output IRT.FitStatistics.FitStatistics=&out._logl;
+		ods output IRT.EstimationResults.ParameterEstimates=_item_parameters;
+		var %do _i=1 %to &_nitems.; &&item&_i %end;;
+		model %do _i=1 %to &_nitems.; &&item&_i %end;/ resfunc=gpc;
+		equality %do _i=1 %to &_nitems.; %if (&&PCM&_i=1) %then %do; &&item&_i %end; %end; / parm=[slope];
+	run;	
+	proc sql noprint; 
+		select reason into :reason from &out._conv;
+	quit;
+	%let reason=&reason.;
+	%put &reason;
+	data &out._conv;
+		set &out._conv;
+		C=(substr(reason,1,1)='C');
 	run;
-	/* numerical maximization using PROC NLMIXED */
-	%if %upcase("&PROC")="NLMIXED" %then %do;
-		proc nlmixed data=_new;
-		ods output nlmixed.ConvergenceStatus=&out._conv;
-		ods output nlmixed.additionalestimates=_item_parameters;
-		ods output nlmixed.fitstatistics=_logl;
-		parms 
-		eta1_1=0
-		%if &max1>1 %then %do;
-			%do _h=2 %to &max1.; 
-				,eta1_&_h.=0 
-			%end;
-		%end;
-		%if &d1.=Y %then %do;
-			,alpha1=1	 
-		%end;
-		%if &_nitems.>1 %then %do;
-			%do _i=2 %to &_nitems.;
-				%do _h=1 %to &&max&_i; 
-					,eta&_i._&_h.=0 
-				%end; 
-				%if &&d&_i=Y %then %do;
-					,alpha&_i.=1	 
-				%end;
-			%end;
-		%end;
-		%if &disc.>0 %then %do;
-			,alpha=1
-		%end;;
-		%do _i=1 %to &_nitems.; 
-			%if &&d&_i=Y %then %do;		
-				_denom=1 %do _k=1 %to &&max&_i; 
-					+exp(alpha&_i.*(&_k*_theta+eta&_i._&_k.)) 
-				%end;;
-				if item="&&item&_i" and value=0 then ll=-log(_denom);
-				%do _h=1 %to &&max&_i;
-					if item="&&item&_i" and value=&_h then ll=alpha&_i.*(&_h*_theta+eta&_i._&_h.)-log(_denom);
-				%end; 
-			%end;
-			%else %if &&d&_i^=Y %then %do;		
-				_denom=1 %do _k=1 %to &&max&_i; 
-					/* sæt alpha ind fælles for 1PL items */
-					+exp(alpha*(&_k*_theta+eta&_i._&_k.)) 
-				%end;;
-				if item="&&item&_i" and value=0 then ll=-log(_denom);
-				%do _h=1 %to &&max&_i;
-					if item="&&item&_i" and value=&_h then ll=alpha*(&_h*_theta+eta&_i._&_h.)-log(_denom);
-				%end; 
-			%end;
-		%end;
-		model value~general(ll);
-		random _theta ~ normal(0,1) subject=person;	
-		%do _i=1 %to &_nitems.; 
-			%if &&d&_i=Y %then %do;
-				estimate "&&item&_i. (discrimination)" alpha&_i.;
-			%end; 
-			%else %if &&d&_i^=Y %then %do;
-				estimate "&&item&_i. (discrimination)" alpha;
-			%end; 
-			%do _h=1 %to &&max&_i; 
-				estimate "&&item&_i.|&_h. (threshold)" -eta&_i._&_h. %if &_h.>1 %then %do; +eta&_i._%eval(&_h.-1) %end;; 
-				estimate "&&item&_i.|&_h." eta&_i._&_h.; 
-			%end; 
-		%end;
-		run;
-		data &out._logl;
-		set _logl;
-		run;
-
-		data _thres_temp _disc_temp _ipar_temp;  
-		set _item_parameters;
-		label parameter='Parameter';
-		parameter=scan(label,1,'(');
-		if scan(label,-1,'(')='threshold)' then output _thres_temp; 
-		else if scan(label,-1,'(')='discrimination)' then output _disc_temp;
-		else output _ipar_temp;
-		run;
-
-		proc sql;
-		create table &out._ipar as select
-		parameter,
-		estimate,
-		StandardError,
-		lower,
-		upper
-		from _ipar_temp;
-		quit;
-
-		proc sql;
-		create table &out._thres as select
-		parameter,
-		estimate,
-		StandardError,
-		lower,
-		upper
-		from _thres_temp;
-		quit;
-		proc sql;
-		create table &out._disc as select
-		parameter,
-		estimate,
-		StandardError,
-		lower,
-		upper
-		from _disc_temp;
-		quit;
-	%end;
-	%if %upcase("&PROC")="IRT" %then %do;
-		proc irt;
-		run;
-	%end;
-	%if (%upcase("&PROC") ne "NLMIXED" %and %upcase("&PROC") ne "IRT") %then %do; 
-		%put PROC must be NLMIXED or IRT - Exiting macro;
+	proc sql noprint; 
+		select C into :C from &out._conv;
+	quit;	
+	%let C=&C;
+	%if (&C.=0) %then %do; 
+		%put Exiting macro;
 		%goto exit;
 	%end;
-	
-	/* Make datasets to use in %LIRT_ICC and %LIRT_SIMU */	
-	data _ipar0;
-	set &out._ipar;
-	item=scan(parameter,1,'|');
-	score=scan(parameter,-1,'|')*1; 
-	run;
-	
-	data _thres0;
-	set &out._thres;
-	item=scan(parameter,1,'|');
-	score=scan(parameter,-1,'|')*1; 
-	run;
-
-	data _disc0;
-	set &out._disc;
-	item=parameter;
-	run;
-
-	data _names;
-	set &names.;
-	label score='Score';
-	order=_n_;
-	do score=0 to max;
-		output;
-	end;
-	run;
-
-	proc sql;
-	create table _ipar1 as select a.*,
-	b.estimate as ipar label='Item parameter'
-	from _names a left join _ipar0 b
-	on a.name=b.item and a.score=b.score;
-	quit; 
-
-	proc sql;
-	create table _ipar2 as select a.*,
-	b.estimate as thres label='Item threshold'
-	from _ipar1 a left join _thres0 b
-	on a.name=b.item and a.score=b.score;
-	quit;
-
-	proc sql;
-	create table _ipar3 as select a.*,
-	b.estimate as disc label='Item discrimination'
-	from _ipar2 a left join _disc0 b
-	on a.name=b.item;
-	quit;
-
-	data _ipar3;
-	set _ipar3;
-	if score=0 then do;
-		ipar=0;
-		thres=0;
-	end;
-	run;
-	
-	proc sort data=_ipar3 out=&out._names (drop=order disc_yn);
-	by order score;
-	run;
-
-	proc sql;
-	create table _out1 as select 
-	distinct(name),
-	disc as estimate label='Estimate',
-	strip(name)||' (discrimination)' as parameter
-	from &out._names;
-	quit;
-
-	proc sql;
-	create table _out2 as select *,
-	estimate/(exp(sum(log(estimate))))**(1/&_nitems.) as estimate_std label='Standardized estimate',
-	(exp(sum(log(estimate))))**(1/&_nitems.) as weight
-	from _out1;
-	quit;
-
-	proc sql noprint;
-	select distinct(weight)
-	into :sigma
-	from _out2;
-	quit;
-
-	data _sigma;
-	parameter='Sigma';
-	estimate=1;
-	estimate_std=&sigma.;
-	run;
-
-	data _disc_std;
-	format estimate estimate_std 7.4;
-	set _out2 (drop=weight) _sigma;
-	run; 
-	
-	proc sql;
-	create table &out._disc_std as select 
-	parameter label='Parameter',
-	estimate,
-	estimate_std
-	from _disc_std;
-	quit;
-
-	data &out._pardata;
-	set &out._names;
-	run;
-
+	%else %do;
+		data &out._disc &out._thres;  
+			set _item_parameters(drop=ProbT);
+			score=substr(Parameter,6,1)*1;
+			lower=estimate-1.96*stderr;
+			upper=estimate+1.96*stderr;
+			if parameter='Slope' then output &out._disc; 
+			else output &out._thres;
+		run;
+		%do _i=1 %to &_nitems;
+			proc sql;
+				select estimate into :it&_i._thres1-:it&_i._thres&&max&_i
+				from &out._thres
+				where item="&&item&_i";
+			quit;
+		%end;
+		data &out._ipar;
+			set &out._thres;
+			%do _i=1 %to &_nitems;
+				if item="&&item&_i" then do;
+					%do _h=1 %to &&max&_i;
+						if score=&_h then ipar=0 %do _k=1 %to &_h; -&&it&_i._thres&_k. %end;;
+					%end;
+				end;
+			%end;
+			drop estimate stderr lower upper;
+		run;
+		data _names;
+			set &names.;
+			label score='Score';
+			order=_n_;
+			do score=0 to max;
+				output;
+			end;
+		run;
+		proc sql;
+			create table _ipar1 as select a.*,
+			b.ipar as ipar label='Item parameter'
+			from _names a left join &out._ipar b
+			on a.name=b.item and a.score=b.score;
+		quit; 
+		proc sql;
+			create table _ipar2 as select a.*,
+			b.estimate as thres label='Item threshold'
+			from _ipar1 a left join &out._thres b
+			on a.name=b.item and a.score=b.score;
+		quit;
+		proc sql;
+			create table _ipar3 as select a.*,
+			b.estimate as disc label='Item discrimination'
+			from _ipar2 a left join &out._disc b
+			on a.name=b.item;
+		quit;
+		data _ipar3;
+			set _ipar3;
+			if score=0 then do;
+				ipar=0;
+				thres=0;
+			end;
+		run;
+		proc sort data=_ipar3 out=&out._names (drop=order disc_yn);
+			by order score;
+		run;
+	%end;
 %end;
 %else %if &dim.=2 %then %do;
 
