@@ -71,13 +71,21 @@ ods exclude all;
 		 :d1-:d&_nitems.
 	from &names.;
 	quit;
-	
-	* only used for initial values in parms statement;
+
 	proc sql noprint;
 	select sum((disc_yn^='Y'))
 	into :disc
 	from &names.;
 	quit;
+
+	proc sql noprint;
+	select (disc_yn^='Y') into :PCM1-:PCM&_nitems.
+	from &names.;
+	quit;
+	
+	%do _i=1 %to &_nitems;
+	%put item &_i is &&_item&_i PCM is &&PCM&_i;
+	%end;
 
 	/*******************************************/
 	/* start of item parameter estimation part */
