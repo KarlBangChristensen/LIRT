@@ -84,7 +84,7 @@ ods exclude all;
 	quit;
 	
 	%do _i=1 %to &_nitems;
-	%put item &_i is &&item&_i PCM is &&PCM&_i;
+	%let PCM&_i=&&PCM&_i;
 	%end;
 
 	/*******************************************/
@@ -95,7 +95,8 @@ ods exclude all;
 		ods output IRT.FitStatistics.FitStatistics=&out._logl;
 		ods output IRT.EstimationResults.ParameterEstimates=_item_parameters;
 		var %do _i=1 %to &_nitems.; &&item&_i %end;;
-		model %do _i=1 %to &_nitems.; &&item&_i %end;/resfunc=gpc;
+		model %do _i=1 %to &_nitems.; &&item&_i %end;/ resfunc=gpc;
+		equality %do _i=1 %to &_nitems.; %if (&&PCM&_i=1) %then %do; &&item&_i %end; / parm=[slope];
 	run;	
 	proc sql noprint; 
 		select reason into :reason from &out._conv;
