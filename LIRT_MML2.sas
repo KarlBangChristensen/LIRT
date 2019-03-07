@@ -96,7 +96,7 @@ ods exclude all;
 		ods output IRT.EstimationResults.ParameterEstimates=_item_parameters;
 		var %do _i=1 %to &_nitems.; &&item&_i %end;;
 		model %do _i=1 %to &_nitems.; &&item&_i %end;/ resfunc=gpc;
-		equality %do _i=1 %to &_nitems.; %if (&&PCM&_i=1) %then %do; &&item&_i %end; / parm=[slope];
+		equality %do _i=1 %to &_nitems.; %if (&&PCM&_i=1) %then %do; &&item&_i %end; %end; / parm=[slope];
 	run;	
 	proc sql noprint; 
 		select reason into :reason from &out._conv;
