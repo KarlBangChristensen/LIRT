@@ -121,30 +121,25 @@ ods exclude all;
 		%put Exiting macro;
 		%goto exit;
 	%end;
-	%else %do;
-	
-		OPTIONS MPRINT;
-		
+	%else %do;		
 		data &out._disc &out._thres;  
 			set _item_parameters(drop=ProbT);
 			score=1;
-			if substr(parameter,1,4)='Step' or substr(Parameter,1,6)='Step 1' then score=1;
-			if substr(parameter,1,6)='Step 2' then score=2;
-			if substr(parameter,1,6)='Step 3' then score=3;
-			if substr(parameter,1,6)='Step 4' then score=4;
-			if substr(parameter,1,6)='Step 5' then score=5;
-			if substr(parameter,1,6)='Step 6' then score=6;
-			if substr(parameter,1,6)='Step 7' then score=7;
-			if substr(parameter,1,6)='Step 8' then score=8;
-			if substr(parameter,1,6)='Step 9' then score=9;
+			if length(parameter) > 5 then do;
+				if substr(parameter,1,6)='Step 2' then score=2;
+				if substr(parameter,1,6)='Step 3' then score=3;
+				if substr(parameter,1,6)='Step 4' then score=4;
+				if substr(parameter,1,6)='Step 5' then score=5;
+				if substr(parameter,1,6)='Step 6' then score=6;
+				if substr(parameter,1,6)='Step 7' then score=7;
+				if substr(parameter,1,6)='Step 8' then score=8;
+				if substr(parameter,1,6)='Step 9' then score=9;
+			end;
 			lower=estimate-1.96*stderr;
 			upper=estimate+1.96*stderr;
 			if parameter='Slope' then output &out._disc; 
 			else output &out._thres;
-		run;
-
-		OPTIONS NOMPRINT;
-		
+		run;		
 		%do _i=1 %to &_nitems;
 			proc sql;
 				select estimate into :it&_i._thres1-:it&_i._thres&&max&_i
