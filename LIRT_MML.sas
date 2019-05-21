@@ -77,6 +77,9 @@ ods exclude all;
 	from &names.;
 	quit;
 
+	%let disc=&disc.;
+	%put disc is &disc;
+
 	proc sql noprint;
 	select (disc_yn^='Y') into :PCM1-:PCM&_nitems.
 	from &names.;
@@ -95,7 +98,11 @@ ods exclude all;
 		ods output IRT.EstimationResults.ParameterEstimates=_item_parameters;
 		var %do _i=1 %to &_nitems.; &&item&_i %end;;
 		model %do _i=1 %to &_nitems.; &&item&_i %end;/ resfunc=gpc;
-		equality %do _i=1 %to &_nitems.; %if (&&PCM&_i=1) %then %do; &&item&_i %end; %end; / parm=[slope];
+		%if (&disc. ne 0) %then %do;
+			equality 
+			%do _i=1 %to &_nitems.; %if (&&PCM&_i=1) %then %do; &&item&_i %end; %end; 
+			/ parm=[slope];
+		%end;
 	run;	
 	proc sql noprint; 
 		select reason into :reason from &out._conv;
@@ -117,7 +124,16 @@ ods exclude all;
 	%else %do;
 		data &out._disc &out._thres;  
 			set _item_parameters(drop=ProbT);
-			score=substr(Parameter,6,1)*1;
+			score=1;
+			if substr(parameter,1,4)='Step' or substr(Parameter,1,6)='Step 1' then score=1;
+			if substr(parameter,1,6)='Step 2' then score=2;
+			if substr(parameter,1,6)='Step 3' then score=3;
+			if substr(parameter,1,6)='Step 4' then score=4;
+			if substr(parameter,1,6)='Step 5' then score=5;
+			if substr(parameter,1,6)='Step 6' then score=6;
+			if substr(parameter,1,6)='Step 7' then score=7;
+			if substr(parameter,1,6)='Step 8' then score=8;
+			if substr(parameter,1,6)='Step 9' then score=9;
 			lower=estimate-1.96*stderr;
 			upper=estimate+1.96*stderr;
 			if parameter='Slope' then output &out._disc; 
@@ -754,13 +770,16 @@ ods exclude all;
 	where substr(name,1,1)='_';
 	quit;
 
+	/*
+
 	proc datasets nodetails; 
 	delete %do k=1 %to &_ndata.; &&_data&k %end; _datasets;
 	run;
 	quit;
 
+	*/
+
 %end;
 options notes;
 ods exclude none;
 %exit: %mend LIRT_MML;
-
