@@ -122,6 +122,9 @@ ods exclude all;
 		%goto exit;
 	%end;
 	%else %do;
+	
+		OPTIONS MPRINT;
+		
 		data &out._disc &out._thres;  
 			set _item_parameters(drop=ProbT);
 			score=1;
@@ -139,6 +142,9 @@ ods exclude all;
 			if parameter='Slope' then output &out._disc; 
 			else output &out._thres;
 		run;
+
+		OPTIONS NOMPRINT;
+		
 		%do _i=1 %to &_nitems;
 			proc sql;
 				select estimate into :it&_i._thres1-:it&_i._thres&&max&_i
