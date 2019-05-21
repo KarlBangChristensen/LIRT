@@ -48,7 +48,8 @@ options nonotes nomprint;
 options mprint;
 
 * Include %LIRT_SIMU;
-filename simu URL 'http://192.38.117.59/~mola/lirt_simu.sas'; %include simu;
+* filename simu URL 'http://192.38.117.59/~mola/lirt_simu.sas'; 
+* %include simu;
 
 * count number of records in data set;
 data _null_; 
