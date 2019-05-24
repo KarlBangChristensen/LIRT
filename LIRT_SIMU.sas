@@ -2,7 +2,21 @@
 
 macro to simulate data from longitudinal IRT model
 
-NAMES : data set with columns name1 $, name2 $, score, ipar (not threshold!), disc (1 => Rasch item),
+NAMES : DIM=1: data set with columns name $, score, ipar (not threshold!), disc (1 => Rasch item),
+
+			 Example: 
+
+			NAME        SCORE  IPAR   DISC  
+
+			item1      0       0     2               
+			item1      1      -2     2               
+ 
+			item2      0       0     1.5
+			item2      1       2.5   1.5         
+			item2      2       2.5   1.5  
+	
+
+NAMES : DIM=2: data set with columns name1 $, name2 $, score, ipar (not threshold!), disc (1 => Rasch item),
 			 ld_item $ (only for time 2 items. Time 1 item on which the time 2 item depend), 
 			 ld_group (the response group for which item parameter applies)
 
