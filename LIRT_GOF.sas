@@ -129,7 +129,7 @@ run;
 		where dataset ne 0;
 		by interval NOTSORTED;
 		var it1_mean;
-		output out=Pctls pctlpts = 1 5 95 99 pctlpre = it1_ pctlname = pct1 pct5 pct95 pct99;
+		output out=Pctls pctlpts = 1 2.5 97.5 99 pctlpre = it1_ pctlname = pct1 pct5 pct95 pct99;
 	run;
 	data plot;
 		set GOF_gofplot(where=(dataset=0)) pctls;
