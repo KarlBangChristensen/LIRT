@@ -128,8 +128,8 @@ run;
 	proc univariate data=GOF_gofplot noprint;
 		where dataset ne 0;
 		by interval NOTSORTED;
-		var it1_mean;
-		output out=Pctls pctlpts = 1 2.5 97.5 99 pctlpre = it1_ pctlname = pct1 pct5 pct95 pct99;
+		var &item._mean;
+		output out=Pctls pctlpts = 1 2.5 97.5 99 pctlpre = &item._ pctlname = pct1 pct5 pct95 pct99;
 	run;
 	data plot;
 		set GOF_gofplot(where=(dataset=0)) pctls;
@@ -142,7 +142,7 @@ run;
 
 ods output Datasets.Members=_datasets;
 
-proc datasets nodetails;
+proc datasets nodetails n;
 run; 
 quit;
 
