@@ -175,9 +175,9 @@ run;
 quit;
 ods exclude none;
 proc sgplot data=plot;
-	band x=interval lower=&name._pct1 upper=&name._pct99 / fillattrs=(color=lightgrey);
-	band x=interval lower=&name._pct5 upper=&name._pct95 / fillattrs=(color=darkgrey);
-	series y=&name._mean x=interval / lineattrs=(thickness=3 pattern=1 color=black);
+	band x=interval lower=&item._pct1 upper=&item._pct99 / fillattrs=(color=lightgrey);
+	band x=interval lower=&item._pct5 upper=&item._pct95 / fillattrs=(color=darkgrey);
+	series y=&item._mean x=interval / lineattrs=(thickness=3 pattern=1 color=black);
 run;
 
 options notes;
