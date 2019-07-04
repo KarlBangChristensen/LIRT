@@ -144,7 +144,7 @@ run;
 
 ods output Datasets.Members=_datasets;
 
-proc datasets nodetails n;
+proc datasets nodetails nolist;
 run; 
 quit;
 
