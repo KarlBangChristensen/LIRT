@@ -79,6 +79,7 @@ run;
 	* simulate data sets;
 	%lirt_simu(NAMES=&names, DIM=1, NDATA=&nsimu, NPERSONS=&N, PDATA=_pdata, OUT=s);
 	ods exclude all;
+	options nonotes;
 	* combine observed and simulated data sets - compute score (item mean rescaled);
 	data _s0 /*(rename=(&id.=id))*/; set &data; dataset=0; run;
 	%do _simu=1 %to &nsimu;
