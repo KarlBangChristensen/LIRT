@@ -175,7 +175,7 @@ proc datasets nodetails nolist;
 run;
 quit;
 ods exclude none;
-proc sgplot data=plot;
+proc sgplot data=&out.gofplot;
 	band x=interval lower=&item._pct1 upper=&item._pct99 / fillattrs=(color=lightgrey);
 	band x=interval lower=&item._pct5 upper=&item._pct95 / fillattrs=(color=darkgrey);
 	series y=&item._mean x=interval / lineattrs=(thickness=3 pattern=1 color=black);
