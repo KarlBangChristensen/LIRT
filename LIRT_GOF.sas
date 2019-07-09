@@ -135,7 +135,7 @@ run;
 		where dataset ne 0;
 		by interval NOTSORTED;
 		var &item._mean;
-		output out=Pctls pctlpts = 1 2.5 97.5 99 pctlpre = &item._ pctlname = pct1 pct5 pct95 pct99;
+		output out=Pctls pctlpts = 0.5 2.5 97.5 99.5 pctlpre = &item._ pctlname = pct0_5 pct2_5 pct97_5 pct99_5;
 	run;
 	data &out.gofplot;
 		set _gofplot(where=(dataset=0)) pctls;
@@ -164,7 +164,7 @@ into :_data1-:_data&_ndata.
 from _datasets
 where substr(name,1,1)='_';
 quit;
-* delet data sets that begin with underscore;
+* delete data sets that begin with underscore;
 proc datasets; 
 	delete %do k=1 %to &_ndata.; &&_data&k %end; _datasets;
 run;
@@ -177,9 +177,10 @@ quit;
 ods exclude none;
 %put;
 options mprint;
+
 proc sgplot data=&out.gofplot;
-	band x=interval lower=&item._pct1 upper=&item._pct99 / fillattrs=(color=lightgrey);
-	band x=interval lower=&item._pct5 upper=&item._pct95 / fillattrs=(color=darkgrey);
+	band x=interval lower=&item._pct0_5 upper=&item._pct99_5 / fillattrs=(color=lightgrey);
+	band x=interval lower=&item._pct2_5 upper=&item._pct97_5 / fillattrs=(color=darkgrey);
 	series y=&item._mean x=interval / lineattrs=(thickness=3 pattern=1 color=black);
 run;
 options nomprint;
