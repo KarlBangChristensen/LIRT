@@ -69,6 +69,8 @@ OUT  : prefix for output data set with simulated responses (and other variables)
 
 DELETE : delete temporary files ? (default 'Y')
 
+seed: seed for the random draws of person locations. Default 0.
+
 OBS! If the item scores in &NAMES goes from 1 to some MAX it is assumed that the items are scored from 1,...,MAX 
 and that the ipar and disc corresponding to a score of 0 is 0 and 1	resp. 
 This corresponds to using the output &OUT_NAMES from %LIRT_MML as input to 
@@ -84,9 +86,10 @@ If the item scores goes from 0 to MAX then it is assumed that all the scores are
 			NPERSONS,
 			PDATA, 
 			OUT,
-			DELETE=Y);
+			DELETE=Y
+			seed=0);
 
-options /*no*/mprint nonotes;
+options nomprint nonotes;
 ods exclude all;
 
 %let seed=&seed.;
