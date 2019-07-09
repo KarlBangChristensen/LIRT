@@ -15,7 +15,9 @@ Goodness of fit macro (create data set that can be used for simulation based gra
 
 	CLASS_SIZE: minimum size of score groups in the collapsed score (default value 20)
 
-	OUT: the prefix for the output data set
+	OUT: the prefix for the output data set (default 'GOF')
+	
+	seed: seed for the rnadom draws (default 0)
 
 **********************************************************/
 %macro LIRT_GOF(item, 
@@ -24,9 +26,11 @@ Goodness of fit macro (create data set that can be used for simulation based gra
 				dim,
 				nsimu=100, 
 				CLASS_SIZE=20, 
-				out=GOF);
+				out=GOF,
+				seed=0);
 
 %let out=%trim(&out);
+%let seed=&seed.;
 ods exclude all;
 goptions reset=all;
 options nonotes nomprint;
@@ -77,7 +81,7 @@ run;
 	%put total score (range 0-%eval(&_maxscore)) will be collapsed (class size=%eval(&CLASS_SIZE));
 	%put ****************************************;
 	* simulate data sets;
-	%lirt_simu(NAMES=&names, DIM=1, NDATA=&nsimu, NPERSONS=&N, PDATA=_pdata, OUT=s);
+	%lirt_simu(NAMES=&names, DIM=1, NDATA=&nsimu, NPERSONS=&N, PDATA=_pdata, OUT=s, seed=&seed);
 	ods exclude all;
 	options nonotes nomprint;
 	* combine observed and simulated data sets - compute score (item mean rescaled);
