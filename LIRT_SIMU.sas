@@ -67,6 +67,9 @@ PDATA : if NPERSONS=0 then PDATA should contain the individual theta estimates. 
 
 OUT  : prefix for output data set with simulated responses (and other variables)
 
+DELETE : delete temporary files ? (default 'Y')
+SEED: seed for the random draws (default=0)
+
 OBS! If the item scores in &NAMES goes from 1 to some MAX it is assumed that the items are scored from 1,...,MAX 
 and that the ipar and disc corresponding to a score of 0 is 0 and 1	resp. 
 This corresponds to using the output &OUT_NAMES from %LIRT_MML as input to 
@@ -82,11 +85,13 @@ If the item scores goes from 0 to MAX then it is assumed that all the scores are
 			NPERSONS,
 			PDATA, 
 			OUT,
-			DELETE=Y);
+			DELETE=Y,
+			seed=0);
 
 options nomprint nonotes;
 ods exclude all;
 
+%let seed=&seed.;
 /*********** START OF 1-DIMENSIONAL CASE ***********/
 
 %if &dim=1 %then %do;
@@ -133,7 +138,7 @@ quit;
 * simulate correlated thetas;						
 data _theta; 
 do id=1 to &npersons; 
-x=rannor(0);
+x=rannor(&seed.);
 theta=&pmean.+sqrt(&pvar.)*x; 
 join=1;
 output;
@@ -182,6 +187,7 @@ run;
 
 data _resp1;
 set _prob1_t;
+call streaminit(&seed.);
 %do i=1 %to &_nitems.;
 if name="&&i&i" then do;
 resp=rand('table' %do score=0 %to &&max&i; ,_&score. %end;)-1;
