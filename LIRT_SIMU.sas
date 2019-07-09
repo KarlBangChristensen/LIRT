@@ -68,7 +68,6 @@ PDATA : if NPERSONS=0 then PDATA should contain the individual theta estimates. 
 OUT  : prefix for output data set with simulated responses (and other variables)
 
 DELETE : delete temporary files ? (default 'Y')
-SEED: seed for the random draws (default=0)
 
 OBS! If the item scores in &NAMES goes from 1 to some MAX it is assumed that the items are scored from 1,...,MAX 
 and that the ipar and disc corresponding to a score of 0 is 0 and 1	resp. 
@@ -85,8 +84,7 @@ If the item scores goes from 0 to MAX then it is assumed that all the scores are
 			NPERSONS,
 			PDATA, 
 			OUT,
-			DELETE=Y,
-			seed=0);
+			DELETE=Y);
 
 options /*no*/mprint nonotes;
 ods exclude all;
@@ -187,7 +185,6 @@ run;
 
 data _resp1;
 set _prob1_t;
-call streaminit(&seed.);
 %do i=1 %to &_nitems.;
 if name="&&i&i" then do;
 resp=rand('table' %do score=0 %to &&max&i; ,_&score. %end;)-1;
