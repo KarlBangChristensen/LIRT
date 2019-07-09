@@ -33,7 +33,7 @@ Goodness of fit macro (create data set that can be used for simulation based gra
 %let seed=&seed.;
 ods exclude all;
 goptions reset=all;
-options nonotes nomprint;
+options nonotes /*no*/mprint;
 
 * Include %LIRT_SIMU;
 %let git=https://raw.githubusercontent.com/KarlBangChristensen/LIRT/master;
@@ -83,7 +83,7 @@ run;
 	* simulate data sets;
 	%lirt_simu(NAMES=&names, DIM=1, NDATA=&nsimu, NPERSONS=&N, PDATA=_pdata, OUT=s, seed=&seed);
 	ods exclude all;
-	options nonotes nomprint;
+	options nonotes /*no*/mprint;
 	* combine observed and simulated data sets - compute score (item mean rescaled);
 	data _s0 /*(rename=(&id.=id))*/; set &data; dataset=0; run;
 	%do _simu=1 %to &nsimu;
