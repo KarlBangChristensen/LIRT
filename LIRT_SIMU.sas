@@ -88,7 +88,7 @@ If the item scores goes from 0 to MAX then it is assumed that all the scores are
 			DELETE=Y,
 			seed=0);
 
-options nomprint nonotes;
+options /*no*/mprint nonotes;
 ods exclude all;
 
 %let seed=&seed.;
@@ -658,6 +658,6 @@ proc datasets nodetails;
 run;
 quit;
 %end;
-options notes; 
+options notes nomprint; 
 ods exclude none;
 %mend LIRT_SIMU;
