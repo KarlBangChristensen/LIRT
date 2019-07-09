@@ -86,7 +86,7 @@ If the item scores goes from 0 to MAX then it is assumed that all the scores are
 			NPERSONS,
 			PDATA, 
 			OUT,
-			DELETE=Y
+			DELETE=Y,
 			seed=0);
 
 options nomprint nonotes;
