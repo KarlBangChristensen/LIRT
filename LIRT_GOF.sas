@@ -1,7 +1,7 @@
 /**********************************************************
 
 Goodness of fit macro (create data set that can be used for simulation based graphical evaluation of fit).
-
+ 
 	ITEM: the item for which the fit should be checked
 
 	DATA: data set with items
@@ -179,8 +179,8 @@ ods exclude none;
 options mprint;
 
 proc sgplot data=&out.gofplot;
-	band x=interval lower=&item._pct0_5 upper=&item._pct99_5 / fillattrs=(color=lightgrey);
-	band x=interval lower=&item._pct2_5 upper=&item._pct97_5 / fillattrs=(color=darkgrey);
+	band x=interval lower=&item._pct0_5 upper=&item._pct99_5 / fillattrs=(color=lightgrey) legendlabel='99 % CI';
+	band x=interval lower=&item._pct2_5 upper=&item._pct97_5 / fillattrs=(color=darkgrey) legendlabel='95 % CI';
 	series y=&item._mean x=interval / lineattrs=(thickness=3 pattern=1 color=black);
 run;
 options nomprint;
