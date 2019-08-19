@@ -152,7 +152,7 @@ ods exclude all;
 			%do _i=1 %to &_nitems;
 				if item="&&item&_i" then do;
 					%do _h=1 %to &&max&_i;
-						if score=&_h then ipar=0 %do _k=1 %to &_h; -&&it&_i._thres&_k. %end;;
+						if score=&_h then ipar=0 %do _k=1 %to &_h; -(&&it&_i._thres&_k.) %end;;
 					%end;
 				end;
 			%end;
