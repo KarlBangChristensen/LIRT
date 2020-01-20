@@ -176,8 +176,8 @@ run;
 quit;
 ods exclude none;
 %put;
-options nomprint;
 
+options mprint;
 proc sgplot data=&out.gofplot;
 	band x=interval lower=&item._pct0_5 upper=&item._pct99_5 / fillattrs=(color=lightgrey) legendlabel='99 % CI';
 	band x=interval lower=&item._pct2_5 upper=&item._pct97_5 / fillattrs=(color=darkgrey) legendlabel='95 % CI';
